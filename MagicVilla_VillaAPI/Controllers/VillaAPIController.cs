@@ -15,9 +15,21 @@ namespace MagicVilla_VillaAPI.Controllers
     [ApiController] 
     public class VillaAPIController : ControllerBase
     {
+        private readonly ILogger<VillaAPIController> _logger;
+        public VillaAPIController(ILogger<VillaAPIController> logger)
+        {
+            _logger = logger;                
+        }
+
+
+
         [HttpGet]// this attribute will notify the swagger documentation that this endpoint is GET endpoint 
         public ActionResult<IEnumerable<VillaDTO>> GetVillas()
-            => VillaStore.villas;
+        {
+            _logger.LogInformation("Getting all villas");
+            return VillaStore.villas;
+        }
+         
 
         
         [HttpGet("{id:int}", Name = "GetVilla")] // we can give name the endpoint
@@ -30,6 +42,7 @@ namespace MagicVilla_VillaAPI.Controllers
         {
             if (id == 0)
             {
+                _logger.LogError("Get villa error with id : "+id); 
                 return BadRequest(); //400
             }
 
