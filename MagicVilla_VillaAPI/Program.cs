@@ -1,17 +1,17 @@
-using Serilog;
+
+using MagicVilla_VillaAPI.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
 // Add services to the container.
 
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel 
-    .Debug() //anything above the debug will be logged
-    .WriteTo
-    .File("log/villalogs.txt", rollingInterval:RollingInterval.Day) // rollingInterval defines how often should the new file be created
-    .CreateLogger();
+//connection to database
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
+});
 
-//we're saying the application here that we need to use this Serilog logging configuration rather than the built in console logging 
-builder.Host.UseSerilog();
 
 builder.Services.AddControllers(/*options =>
 {
