@@ -2,6 +2,7 @@
 using MagicVilla_VillaAPI.Data;
 using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.Dto;
+using MagicVilla_VillaAPI.Repository.IRepository;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -18,15 +19,17 @@ namespace MagicVilla_VillaAPI.Controllers
     public class VillaAPIController : ControllerBase
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly IVillaRepository _villaRepository;
 
         //using automapper
         private readonly IMapper _mapper;
 
-        public VillaAPIController(ApplicationDbContext dbContext, IMapper mapper)
+        public VillaAPIController(ApplicationDbContext dbContext, IMapper mapper, IVillaRepository villaRepository)
         {
 
             _dbContext = dbContext;
             _mapper = mapper;
+            _villaRepository = villaRepository;
         }
 
 
@@ -35,7 +38,7 @@ namespace MagicVilla_VillaAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<VillaDTO>>> GetVillasAsync()
         {
-            IEnumerable<Villa> villas = await _dbContext.Villas.ToListAsync();
+            IEnumerable<Villa> villas = await _villaRepository.GetAllAsync();
             return Ok(_mapper.Map<List<VillaDTO>>(villas));
         }
 
@@ -54,7 +57,7 @@ namespace MagicVilla_VillaAPI.Controllers
                 return BadRequest(); //400
             }
 
-            var villa = await _dbContext.Villas.FirstOrDefaultAsync(x => x.Id == id);
+            var villa = await _villaRepository.GetAsync(filter:x => x.Id == id, tracked:false);
             if (villa == null)
             {
                 return NotFound();  //404
@@ -72,7 +75,7 @@ namespace MagicVilla_VillaAPI.Controllers
         public async Task<ActionResult<VillaDTO>> CreateVillaAsync([FromBody] VillaCreateDTO createDTO)
         {
 
-            if (await _dbContext.Villas.FirstOrDefaultAsync(x => x.Name.ToLower() == createDTO.Name.ToLower()) != null)
+            if (await _villaRepository.GetAsync(x => x.Name.ToLower() == createDTO.Name.ToLower(), false) != null)
             {
                 ModelState.AddModelError("CustomError", "Name already exists");
                 return BadRequest(ModelState);
@@ -85,8 +88,7 @@ namespace MagicVilla_VillaAPI.Controllers
 
             var villa = _mapper.Map<Villa>(createDTO);
 
-            await _dbContext.Villas.AddAsync(villa);
-            await _dbContext.SaveChangesAsync();
+            await _villaRepository.CreateAsync(villa);            
             //sometimes when resource is created you give them the URL, where the actual resource is created
             return CreatedAtRoute("GetVilla", new { id = villa.Id }, villa);
         }
@@ -103,13 +105,12 @@ namespace MagicVilla_VillaAPI.Controllers
             {
                 return BadRequest(); //400
             }
-            var villa = await _dbContext.Villas.FirstOrDefaultAsync(x => x.Id == id);
+            var villa = await _villaRepository.GetAsync(x => x.Id == id);
             if (villa is null)
             {
                 return NotFound(); //404
             }
-            _dbContext.Villas.Remove(villa);
-            await _dbContext.SaveChangesAsync();
+            _villaRepository.RemoveAsync(villa);            
             return NoContent(); //204
         }
 
@@ -122,14 +123,13 @@ namespace MagicVilla_VillaAPI.Controllers
             if (updateDTO == null || id != updateDTO.Id) return BadRequest(); //400
 
 
-            var villa = await _dbContext.Villas.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            var villa = await _villaRepository.GetAsync(x => x.Id == id, false);
             if (villa is null) { return NotFound(); } //404
             if (!ModelState.IsValid) { return BadRequest(ModelState); } //400
 
             var updatedVilla = _mapper.Map<Villa>(updateDTO);
 
-            _dbContext.Villas.Update(updatedVilla);
-            await _dbContext.SaveChangesAsync();
+            _villaRepository.UpdateAsync(updatedVilla);            
             return NoContent();
         }
 
@@ -141,7 +141,7 @@ namespace MagicVilla_VillaAPI.Controllers
         {
             if (id == 0) return BadRequest();
 
-            var villa = await _dbContext.Villas.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id); // I use AsNoTracking here because by default ef core tracks the object retrieved from database, as the same time entity that is sent to Update() method is also being tracked, but both of these entities's id is same, and ef core cannot track two or more entity with the same id, as a result it throw exception
+            var villa = await _villaRepository.GetAsync(x => x.Id == id, false); // I use AsNoTracking here because by default ef core tracks the object retrieved from database, as the same time entity that is sent to Update() method is also being tracked, but both of these entities's id is same, and ef core cannot track two or more entity with the same id, as a result it throw exception
 
             if (villa is null) return BadRequest();
 
@@ -158,8 +158,7 @@ namespace MagicVilla_VillaAPI.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             //here is updated finally
-            _dbContext.Villas.Update(newVilla);
-            await _dbContext.SaveChangesAsync();
+            await _villaRepository.UpdateAsync(newVilla);
             return NoContent();
         }
     }
