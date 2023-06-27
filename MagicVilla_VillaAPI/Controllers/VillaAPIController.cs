@@ -146,7 +146,7 @@ namespace MagicVilla_VillaAPI.Controllers
                 {
                     return NotFound(); //404
                 }
-                _villaRepository.RemoveAsync(villa);
+                await _villaRepository.RemoveAsync(villa);
                 _apiResponse.StatusCode = HttpStatusCode.NoContent;
                 return Ok(_apiResponse); //204
             }

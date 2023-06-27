@@ -1,17 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MagicVilla_VillaAPI.Models
+namespace MagicVilla_Web.Models.Dto
 {
-    public class Villa
-    {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // this ensures that this column will be recorded as primary key
-        public int Id { get; set; }
+    public class VillaCreateDTO
+    {        
         [Required]
+        [MaxLength(30)]
         public string Name { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime UpdatedDate { get; set; }
         public string? Details { get; set; }
         [Required]
         public double Rate { get; set; }
