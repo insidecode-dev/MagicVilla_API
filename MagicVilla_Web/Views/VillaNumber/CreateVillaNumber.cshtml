@@ -1,0 +1,54 @@
+﻿@model MagicVilla_Web.Models.ViewModel.VillaNumberCreateVM
+
+<form asp-action="CreateVillaNumber" method="post">
+    <br />
+    <div class="container border p-3">
+        <h1 class="text-primary">Create Villa Number</h1>
+        <hr />
+
+        <div class="row">
+            <div asp-validation-summary="All/* at first I had written ModelOnly but then changed it to All . That means if the validation is not within the model, If we add CUSTOM ERROR MESSAGE, that will possibly displayed */" class="text-danger"></div>
+
+            <div class="col-2">
+                <label asp-for="VillaNumberCreateDTO.VillaNo" class="control-label pt-2" style="font-size:20px"></label>
+            </div>
+
+            <div class="col-10 pb-3">
+                <input asp-for="VillaNumberCreateDTO.VillaNo" class="form-control" />
+                <span asp-validation-for="VillaNumberCreateDTO.VillaNo" class="text-danger"></span>
+            </div>
+
+            <div class="col-2">
+                <label asp-for="VillaNumberCreateDTO.VillaID" class="control-label pt-2" style="font-size:20px"></label>
+            </div>
+
+            <div class="col-10 pb-3">                
+                <select asp-for="VillaNumberCreateDTO.VillaID" class="form-select" asp-items="@Model.VillaList">
+                    <option disabled selected>--Select Villa--</option>
+                </select>
+                <span asp-validation-for="VillaNumberCreateDTO.VillaID" class="text-danger"></span>
+            </div>
+            
+            <div class="col-2">
+                <label asp-for="VillaNumberCreateDTO.SpecialDetails" class="control-label pt-2" style="font-size:20px;"></label>
+            </div>
+            <div class="col-10 pb-3">
+                <textarea asp-for="VillaNumberCreateDTO.SpecialDetails" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="VillaNumberCreateDTO.SpecialDetails" class="text-danger"></span>
+            </div>
+
+
+            <div class="col-5 offset-2">
+                <a asp-action="IndexVillaNumber" class="btn-primary btn form-control ">Back to VillaNumber list</a>
+            </div>
+            <div class="col-5">
+                <input type="submit" value="Create" class="btn btn-success form-control" />
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}
+

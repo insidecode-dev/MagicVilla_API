@@ -31,7 +31,7 @@ namespace MagicVilla_VillaAPI.Controllers
         {
             try
             {
-                IEnumerable<VillaNumber> villaNumbers = await _villaNumberRepository.GetAllAsync();
+                IEnumerable<VillaNumber> villaNumbers = await _villaNumberRepository.GetAllAsync(includeProperties:"Villa");
                 _apiResponse.Result = _mapper.Map<List<VillaNumberDTO>>(villaNumbers);
                 _apiResponse.StatusCode = HttpStatusCode.OK;
                 return Ok(_apiResponse);
@@ -61,7 +61,7 @@ namespace MagicVilla_VillaAPI.Controllers
                     _apiResponse.IsSuccess = false;
                     return BadRequest(_apiResponse); //400
                 }
-                var villaNumber = await _villaNumberRepository.GetAsync(x => x.VillaNo == villaNo, false);
+                VillaNumber villaNumber = await _villaNumberRepository.GetAsync(x => x.VillaNo == villaNo , tracked : false , includeProperties : "Villa");
                 if (villaNumber is null)
                 {
                     _apiResponse.ErrorMessages.Add(HttpStatusCode.NotFound.ToString());
@@ -89,7 +89,7 @@ namespace MagicVilla_VillaAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse>> CreateVillaNumber(VillaNumberCreateDTO villaNumberCreateDTO)
+        public async Task<ActionResult<ApiResponse>> CreateVillaNumber([FromBody]VillaNumberCreateDTO villaNumberCreateDTO)
         {
             try
             {
@@ -106,14 +106,15 @@ namespace MagicVilla_VillaAPI.Controllers
                 //we check if there is such villa number 
                 if (await _villaNumberRepository.GetAsync(x => x.VillaNo == villaNumberCreateDTO.VillaNo, false) != null)
                 {
-                    ModelState.AddModelError("CustomError", "Villa Number already Exists !");
+                    //I changed string key from CustomError to ErrorMessages, I have a string list called ErrorMessages, in this case all the errors added to ModelState,AddModelError will be added to that list
+                    ModelState.AddModelError("ErrorMessages", "Villa Number already Exists !");
                     return BadRequest(ModelState);
                 }
 
                 //we check if there is a villa with such id via villaRepository
                 if (await _villaRepository.GetAsync(x => x.Id == villaNumberCreateDTO.VillaID, false) == null)
                 {
-                    ModelState.AddModelError("CustomError", "Villa ID is invalid !");
+                    ModelState.AddModelError("ErrorMessages", "Villa ID is invalid !");
                     return BadRequest(ModelState);
                 }
 
@@ -202,7 +203,7 @@ namespace MagicVilla_VillaAPI.Controllers
                 //we check if there is a villa with such id via villaRepository
                 if (await _villaRepository.GetAsync(x => x.Id == villaNumberUpdateDTO.VillaID, false) == null)
                 {
-                    ModelState.AddModelError("CustomError", "Villa ID is invalid !");
+                    ModelState.AddModelError("ErrorMessages", "Villa ID is invalid !");
                     return BadRequest(ModelState);
                 }
 

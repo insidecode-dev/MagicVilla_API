@@ -100,9 +100,10 @@ namespace MagicVilla_VillaAPI.Controllers
         {
             try
             {
-                if (await _villaRepository.GetAsync(x => x.Name.ToLower() == createDTO.Name.ToLower(), false) != null)
+                var vll = await _villaRepository.GetAsync(x => x.Name.ToLower() == createDTO.Name.ToLower(), false);
+                if ( vll!= null)
                 {
-                    ModelState.AddModelError("CustomError", "Name already exists");
+                    ModelState.AddModelError("ErrorMessages", "Name already exists");
                     return BadRequest(ModelState);
                 }
 
@@ -175,7 +176,7 @@ namespace MagicVilla_VillaAPI.Controllers
 
                 var updatedVilla = _mapper.Map<Villa>(updateDTO);
 
-                _villaRepository.UpdateAsync(updatedVilla);                
+                await _villaRepository.UpdateAsync(updatedVilla);                
                 _apiResponse.StatusCode = HttpStatusCode.NoContent;
                 return Ok(_apiResponse);
             }

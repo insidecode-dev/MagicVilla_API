@@ -54,16 +54,37 @@ namespace MagicVilla_Web.Services
                         break;
                 }
 
-                //It initializes an HttpResponseMessage object called apiResponse and sends the request asynchronously using the SendAsync method of the HttpClient. The response is awaited to ensure the function waits for the API response.
+                // It initializes an HttpResponseMessage object called apiResponse and sends the request asynchronously using the SendAsync method of the HttpClient. The response is awaited to ensure the function waits for the API response.
                 HttpResponseMessage apiRespone = null;
                 apiRespone = await client.SendAsync(message);
 
-                //It reads the content of the API response as a string using ReadAsStringAsync.
+                // It reads the content of the API response as a string using ReadAsStringAsync.
                 var apiContent = await apiRespone.Content.ReadAsStringAsync();
 
-                //It deserializes the API response content string to an object of type T using JsonConvert.DeserializeObject<T> and assigns it to the APIResponse variable.
+                
+                try
+                {
+                    // in code line below we initialize ErrorMessages property of ApiResponse object with the string value of apiContent
+                    ApiResponse ApiResponse = JsonConvert.DeserializeObject<ApiResponse>(apiContent);
+                    // in line below we check if status code successful or not 
+                    if (apiRespone.StatusCode > (System.Net.HttpStatusCode) 299)
+                    {
+                        ApiResponse.StatusCode = apiRespone.StatusCode; //will try to make it generic !!!!!!!!! 
+                        ApiResponse.IsSuccess = false;
+                        var res = JsonConvert.SerializeObject(ApiResponse);
+                        var returnObj = JsonConvert.DeserializeObject<T>(res);
+                        return returnObj;
+                    }
+                }
+                catch (Exception e)
+                {
+                   var exceptionResponse = JsonConvert.DeserializeObject<T>(apiContent);
+                    return exceptionResponse;
+                }
+
                 var APIResponse = JsonConvert.DeserializeObject<T>(apiContent);
                 return APIResponse;
+
             }
 
 
@@ -80,6 +101,8 @@ namespace MagicVilla_Web.Services
                 var APIResponse = JsonConvert.DeserializeObject<T>(res);
                 return APIResponse;
             }
+
+            
         }
     }
 }
