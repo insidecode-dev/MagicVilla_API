@@ -2,8 +2,10 @@
 using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.Dto;
 using MagicVilla_VillaAPI.Repository.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Data;
 using System.Net;
 
 namespace MagicVilla_VillaAPI.Controllers
@@ -25,6 +27,9 @@ namespace MagicVilla_VillaAPI.Controllers
             _villaRepository = villaRepository;
         }
 
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<ApiResponse>> GetVillaNumbers()
@@ -44,6 +49,9 @@ namespace MagicVilla_VillaAPI.Controllers
             return _apiResponse;
         }
 
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpGet("{villaNo:int}", Name = "GetVillaNumber")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -85,6 +93,9 @@ namespace MagicVilla_VillaAPI.Controllers
 
         }
 
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -148,6 +159,9 @@ namespace MagicVilla_VillaAPI.Controllers
             }
         }
 
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpDelete("{villaNo:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -187,6 +201,9 @@ namespace MagicVilla_VillaAPI.Controllers
             }
         }
 
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpPut("{villaNo:int}")]
         public async Task<ActionResult<ApiResponse>> UpdateVillaNumber(int villaNo, VillaNumberUpdateDTO villaNumberUpdateDTO)
         {

@@ -3,6 +3,7 @@ using MagicVilla_VillaAPI.Data;
 using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.Dto;
 using MagicVilla_VillaAPI.Repository.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -35,8 +36,12 @@ namespace MagicVilla_VillaAPI.Controllers
             _apiResponse = new();
         }
 
-        
-        [HttpGet]// this attribute will notify the swagger documentation that this endpoint is GET endpoint 
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [HttpGet]// this attribute will notify the swagger documentation that this endpoint is GET endpoint         
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]// if I'm admin and if this is for custom role it returns this http status code
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]// if I'm not authorized, it means if I'm not logged in and got a jwt token 
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<ApiResponse>> GetVillasAsync()
         {
@@ -51,12 +56,16 @@ namespace MagicVilla_VillaAPI.Controllers
             catch (Exception ex)
             {
                 _apiResponse.ErrorMessages.Add(ex.Message);
-                _apiResponse.IsSuccess = false; 
+                _apiResponse.IsSuccess = false;
                 //                                                
             }
             return _apiResponse;
         }
 
+
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]// if I'm admin and if this is for custom role it returns this http status code
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]// if I'm not authorized, it means if I'm not logged in and got a jwt token 
 
         [HttpGet("{id:int}", Name = "GetVilla")] // we can give name the endpoint
 
@@ -69,12 +78,12 @@ namespace MagicVilla_VillaAPI.Controllers
             try
             {
                 if (id == 0)
-                {                    
+                {
                     return BadRequest(); //400
                 }
                 var villa = await _villaRepository.GetAsync(filter: x => x.Id == id, tracked: false);
                 if (villa == null)
-                {                 
+                {
                     return NotFound();  //404
                 }
                 _apiResponse.Result = _mapper.Map<VillaDTO>(villa);
@@ -90,8 +99,10 @@ namespace MagicVilla_VillaAPI.Controllers
             return _apiResponse;
         }
 
-
-        [HttpPost("NewVilla", Name = "CreateVilla")] // value inside Name parameter is used for url generation, when requesting an endpoint in visual studio your request is sent to the value inside Name parameter, but a string(NewVilla) before Name parameter is just how you see as the name of endpoint in swagger documentation, when you sent request in swagger doumentation or postman you send it using this name
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [HttpPost("NewVilla", Name = "CreateVilla")] // value inside Name parameter is used for url generation, when requesting an endpoint in visual studio your request is sent to the value inside Name parameter, but a string(NewVilla) before Name parameter is just how you see as the name of endpoint in swagger documentation, when you sent request in swagger doumentation or postman you send it using this name        
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -101,7 +112,7 @@ namespace MagicVilla_VillaAPI.Controllers
             try
             {
                 var vll = await _villaRepository.GetAsync(x => x.Name.ToLower() == createDTO.Name.ToLower(), false);
-                if ( vll!= null)
+                if (vll != null)
                 {
                     ModelState.AddModelError("ErrorMessages", "Name already exists");
                     return BadRequest(ModelState);
@@ -115,7 +126,7 @@ namespace MagicVilla_VillaAPI.Controllers
                 var villa = _mapper.Map<Villa>(createDTO);
 
                 await _villaRepository.CreateAsync(villa);
-                _apiResponse.Result = _mapper.Map<VillaDTO>(villa);    
+                _apiResponse.Result = _mapper.Map<VillaDTO>(villa);
                 _apiResponse.StatusCode = HttpStatusCode.Created;
                 //sometimes when resource is created you give them the URL, where the actual resource is created
                 return CreatedAtRoute("GetVilla", new { id = villa.Id }, _apiResponse);
@@ -129,7 +140,9 @@ namespace MagicVilla_VillaAPI.Controllers
         }
 
 
-
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpDelete("{id:int}", Name = "DeleteVilla")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -153,12 +166,15 @@ namespace MagicVilla_VillaAPI.Controllers
             }
             catch (Exception ex)
             {
-                _apiResponse.ErrorMessages.Add(ex.Message);                
-                _apiResponse.IsSuccess=false;
+                _apiResponse.ErrorMessages.Add(ex.Message);
+                _apiResponse.IsSuccess = false;
             }
-            return _apiResponse;            
+            return _apiResponse;
         }
 
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpPut("{id:int}", Name = "UpdateVilla")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -176,18 +192,21 @@ namespace MagicVilla_VillaAPI.Controllers
 
                 var updatedVilla = _mapper.Map<Villa>(updateDTO);
 
-                await _villaRepository.UpdateAsync(updatedVilla);                
+                await _villaRepository.UpdateAsync(updatedVilla);
                 _apiResponse.StatusCode = HttpStatusCode.NoContent;
                 return Ok(_apiResponse);
             }
             catch (Exception ex)
             {
                 _apiResponse.ErrorMessages.Add(ex.Message);
-                _apiResponse.IsSuccess = false; 
+                _apiResponse.IsSuccess = false;
             }
             return _apiResponse;
         }
 
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpPatch("{id:int}", Name = "UpdateVillaPartially")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
