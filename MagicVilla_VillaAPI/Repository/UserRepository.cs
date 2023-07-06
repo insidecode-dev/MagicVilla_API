@@ -46,7 +46,8 @@ namespace MagicVilla_VillaAPI.Repository
             // this line converts secret key to bytes and we'll have that as byte array in the variable => key
             var key = Encoding.ASCII.GetBytes(secretKey);
 
-            //
+            // tokenDescriptor basically contains everything like what are all the claims in a token
+            // Claim - this will basically identify that this is name of the user, this is the role that you have,    
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
@@ -55,6 +56,8 @@ namespace MagicVilla_VillaAPI.Repository
                         new Claim(ClaimTypes.Role, user.Role),
                     }),
                 Expires = DateTime.UtcNow.AddDays(7),
+                
+                // finally we create symmetric security key with our key variable 
                 SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                 
             };
@@ -75,6 +78,7 @@ namespace MagicVilla_VillaAPI.Repository
 
         public async Task<LocalUser> Register(RegistrationRequestDTO logInRequestDTO)
         {
+            // automapper could be used here
             LocalUser localUser = new()
             {
                 Name = logInRequestDTO.Name,

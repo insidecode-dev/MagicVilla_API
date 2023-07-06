@@ -36,7 +36,7 @@ namespace MagicVilla_VillaAPI.Controllers
             _apiResponse = new();
         }
 
-        [Authorize]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpGet]// this attribute will notify the swagger documentation that this endpoint is GET endpoint         
