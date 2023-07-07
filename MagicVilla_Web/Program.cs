@@ -1,22 +1,49 @@
 using MagicVilla_Web;
 using MagicVilla_Web.Services;
 using MagicVilla_Web.Services.IServices;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-//automapper
+// automapper
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 
-//registering services for VillaAPI api
+// registering services for VillaAPI api
 builder.Services.AddHttpClient<IVillaService, VillaService>();
 builder.Services.AddScoped<IVillaService, VillaService>();
 
-//registering services for VillaNumber api 
+// registering services for VillaNumber api 
 builder.Services.AddHttpClient<IVillaNumberService, VillaNumberService>();
 builder.Services.AddScoped<IVillaNumberService, VillaNumberService>();
+
+// registering services for AuthService api 
+builder.Services.AddHttpClient<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// registering 
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+//
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.HttpOnly = true;
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(100);
+        options.LoginPath = "/Auth/LogIn";
+        options.AccessDeniedPath = "/Auth/AccessDenied";
+        options.SlidingExpiration = true;
+    });
+
+// adding session
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(100);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
@@ -33,7 +60,13 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// this is for authentication 
+app.UseAuthentication();
+
 app.UseAuthorization();
+
+// adding session to request pipeline
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",

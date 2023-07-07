@@ -36,9 +36,7 @@ namespace MagicVilla_VillaAPI.Controllers
             _apiResponse = new();
         }
 
-        [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+
         [HttpGet]// this attribute will notify the swagger documentation that this endpoint is GET endpoint         
         [ProducesResponseType(StatusCodes.Status403Forbidden)]// if I'm admin and if this is for custom role it returns this http status code
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]// if I'm not authorized, it means if I'm not logged in and got a jwt token 
@@ -63,9 +61,7 @@ namespace MagicVilla_VillaAPI.Controllers
         }
 
 
-        [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]// if I'm admin and if this is for custom role it returns this http status code
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]// if I'm not authorized, it means if I'm not logged in and got a jwt token 
+      
 
         [HttpGet("{id:int}", Name = "GetVilla")] // we can give name the endpoint
 
@@ -100,8 +96,8 @@ namespace MagicVilla_VillaAPI.Controllers
         }
 
         [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)] // if I'm admin and if this is for custom role it returns this http status code
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)] // if I'm not authorized, it means if I'm not logged in and got a jwt token 
         [HttpPost("NewVilla", Name = "CreateVilla")] // value inside Name parameter is used for url generation, when requesting an endpoint in visual studio your request is sent to the value inside Name parameter, but a string(NewVilla) before Name parameter is just how you see as the name of endpoint in swagger documentation, when you sent request in swagger doumentation or postman you send it using this name        
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

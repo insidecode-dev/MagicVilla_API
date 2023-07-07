@@ -1,12 +1,15 @@
 ﻿using AutoMapper;
+using MagicVilla_Utility;
 using MagicVilla_Web.Models;
 using MagicVilla_Web.Models.Dto;
 using MagicVilla_Web.Models.ViewModel;
 using MagicVilla_Web.Services;
 using MagicVilla_Web.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
+using System.Data;
 
 namespace MagicVilla_Web.Controllers
 {
@@ -23,10 +26,11 @@ namespace MagicVilla_Web.Controllers
             _villaService = villaService;
         }
 
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> IndexVillaNumber()
         {
             List<VillaNumberDTO> villaNumberDTO = null;
-            var result = await _villaNumberService.GetAllAsync<ApiResponse>();
+            var result = await _villaNumberService.GetAllAsync<ApiResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (result.IsSuccess || result.Result != null)
             {
                 villaNumberDTO = JsonConvert.DeserializeObject<List<VillaNumberDTO>>(Convert.ToString(result.Result));
@@ -34,10 +38,11 @@ namespace MagicVilla_Web.Controllers
             return View(villaNumberDTO);
         }
 
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> CreateVillaNumber()
         {
             VillaNumberCreateVM villaNumberCreateVM = new();
-            var response = await _villaService.GetAllAsync<ApiResponse>();
+            var response = await _villaService.GetAllAsync<ApiResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (response.Result != null && response.IsSuccess)
             {
                 //this populates our dropdown's data
@@ -49,13 +54,15 @@ namespace MagicVilla_Web.Controllers
             }
             return View(villaNumberCreateVM);
         }
+
+        [Authorize(Roles = "admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateVillaNumber(VillaNumberCreateVM villaNumberCreateVM)
         {
             if (ModelState.IsValid)
             {
-                var response = await _villaNumberService.CreateAsync<ApiResponse>(villaNumberCreateVM.VillaNumberCreateDTO);
+                var response = await _villaNumberService.CreateAsync<ApiResponse>(villaNumberCreateVM.VillaNumberCreateDTO, HttpContext.Session.GetString(StaticDetails.SessionToken));
                 if (response != null && response.IsSuccess)
                 {
                     TempData["success"] = "VillaNumber created successfully !";
@@ -68,7 +75,7 @@ namespace MagicVilla_Web.Controllers
             }
 
             // if we get error message in post method we need return model back to view again but also we should initialize IEnumerable<SlectListItem> VillaList with villas again, here we do it     
-            var villas = await _villaService.GetAllAsync<ApiResponse>();
+            var villas = await _villaService.GetAllAsync<ApiResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (villas.Result != null && villas.IsSuccess)
             {
                 // this populates our dropdown's data
@@ -82,17 +89,18 @@ namespace MagicVilla_Web.Controllers
             return View(villaNumberCreateVM);
         }
 
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> UpdateVillaNumber(int villaNo /* I named method parameter as villaNo because the value of this comes from IndexVillaNumber action method and in its view I have named asp-route-villaNo as incoming parameter for UpdateVillaNumber */)
         {
             VillaNumberUpdateVM villaNumberUpdateVM = new();
-            var response = await _villaNumberService.GetAsync<ApiResponse>(villaNo);
+            var response = await _villaNumberService.GetAsync<ApiResponse>(villaNo, HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (response.Result != null && response.IsSuccess)
             {
                 VillaNumberDTO villaNumberUpdateDTO = JsonConvert.DeserializeObject<VillaNumberDTO>(Convert.ToString(response.Result));
                 villaNumberUpdateVM.VillaNumberUpdateDTO = _mapper.Map<VillaNumberUpdateDTO>(villaNumberUpdateDTO);
             }
 
-            var villas = await _villaService.GetAllAsync<ApiResponse>();
+            var villas = await _villaService.GetAllAsync<ApiResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (villas.Result != null && villas.IsSuccess)
             {
                 // this populates our dropdown's data
@@ -106,11 +114,12 @@ namespace MagicVilla_Web.Controllers
             return NotFound();
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateVillaNumber(VillaNumberUpdateVM villaNumberUpdateVM)
         {
-            var response = await _villaNumberService.UpdateAsync<ApiResponse>(villaNumberUpdateVM.VillaNumberUpdateDTO);
+            var response = await _villaNumberService.UpdateAsync<ApiResponse>(villaNumberUpdateVM.VillaNumberUpdateDTO, HttpContext.Session.GetString(StaticDetails.SessionToken));
             // I don't check response.Result because in update method api returns us NoContent http status, it means Result will be empty 
             if (response != null && response.IsSuccess)
             {
@@ -122,7 +131,7 @@ namespace MagicVilla_Web.Controllers
                 ModelState.AddModelError("ErrorMessages", response.ErrorMessages.FirstOrDefault());
             }
 
-            var villas = await _villaService.GetAllAsync<ApiResponse>();
+            var villas = await _villaService.GetAllAsync<ApiResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (villas.Result != null && villas.IsSuccess)
             {
                 // this populates our dropdown's data
@@ -136,17 +145,18 @@ namespace MagicVilla_Web.Controllers
             return View(villaNumberUpdateVM);
         }
 
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> DeleteVillaNumber(int villaNo)
         {
             VillaNumberDeleteVM villaNumberDeleteVM = new();
-            var response = await _villaNumberService.GetAsync<ApiResponse>(villaNo);
+            var response = await _villaNumberService.GetAsync<ApiResponse>(villaNo, HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (response.Result != null && response.IsSuccess)
             {
                 VillaNumberDTO villaNumberDTO = JsonConvert.DeserializeObject<VillaNumberDTO>(Convert.ToString(response.Result));
                 villaNumberDeleteVM.VillaNumberDTO = villaNumberDTO;
             }
 
-            var villas = await _villaService.GetAllAsync<ApiResponse>();
+            var villas = await _villaService.GetAllAsync<ApiResponse>(HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (villas.Result != null && villas.IsSuccess)
             {
                 // this populates our dropdown's data
@@ -159,11 +169,13 @@ namespace MagicVilla_Web.Controllers
             }
             return NotFound();
         }
+
+        [Authorize(Roles = "admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteVillaNumber(VillaNumberDeleteVM villaNumberDeleteVM)
         {            
-            var response = await _villaNumberService.DeleteAsync<ApiResponse>(villaNumberDeleteVM.VillaNumberDTO.VillaNo);
+            var response = await _villaNumberService.DeleteAsync<ApiResponse>(villaNumberDeleteVM.VillaNumberDTO.VillaNo, HttpContext.Session.GetString(StaticDetails.SessionToken));
             if (response != null && response.IsSuccess)
             {
                 TempData["success"] = "VillaNumber deleted successfully !";

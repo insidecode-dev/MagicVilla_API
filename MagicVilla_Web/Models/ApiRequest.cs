@@ -13,5 +13,8 @@ namespace MagicVilla_Web.Models
 
         //optional data to be sent with the request
         public object Data { get; set; }
+
+        //
+        public string Token { get; set; }
     }
 }
