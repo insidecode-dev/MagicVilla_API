@@ -52,7 +52,7 @@ namespace MagicVilla_Web.Controllers
             }
             else
             {
-                ModelState.AddModelError("CustomError",apiResponse.ErrorMessages.FirstOrDefault());
+                ModelState.AddModelError("ErrorMessages",apiResponse.ErrorMessages.FirstOrDefault());
                 return View(logInRequestDTO);
             }            
         }

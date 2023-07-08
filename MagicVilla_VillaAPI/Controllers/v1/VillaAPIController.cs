@@ -12,10 +12,10 @@ using System.Net;
 using System.Web;
 
 
-namespace MagicVilla_VillaAPI.Controllers
+namespace MagicVilla_VillaAPI.Controllers.v1
 {
     //[Route("api/VillaAPI")] this is the same as below but [controller attribute is better because if any changes will be made in name of controller the name inside Route attribute should be changed, and this is not a good practise and it is called hardcode 
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
 
     // [ApiController] attribute ensures that this is a api controller
     // It also gives us some additional help on the controller, it identifies that this is an api controller and it includes some basic features for example when using validations in model or entity, makes model validation is active, otherwise we should use ModelState.IsValid in each action that we use entity for model validation 
@@ -61,7 +61,7 @@ namespace MagicVilla_VillaAPI.Controllers
         }
 
 
-      
+
 
         [HttpGet("{id:int}", Name = "GetVilla")] // we can give name the endpoint
 

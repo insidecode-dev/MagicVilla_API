@@ -4,6 +4,9 @@ namespace MagicVilla_Web.Models
 {
     public class ApiResponse
     {
+        public ApiResponse() { 
+        ErrorMessages = new List<string>();
+        }
         //the HTTP status code
         public HttpStatusCode StatusCode { get; set; }
 

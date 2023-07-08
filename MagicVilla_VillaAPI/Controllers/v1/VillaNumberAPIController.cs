@@ -4,22 +4,25 @@ using MagicVilla_VillaAPI.Models.Dto;
 using MagicVilla_VillaAPI.Repository.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Data;
 using System.Net;
 
-namespace MagicVilla_VillaAPI.Controllers
+namespace MagicVilla_VillaAPI.Controllers.v1
 {
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
-    public class VillaNumberController : ControllerBase
+    [ApiVersion("1.0"/*, Deprecated = true*/)]
+    // the Deprecated attribute adds response header api-deprecated-version element as version we give in same ApiVersion attribute   
+    public class VillaNumberAPIController : ControllerBase
     {
         protected ApiResponse _apiResponse;
         private readonly IVillaNumberRepository _villaNumberRepository;
         private readonly IVillaRepository _villaRepository;
         private readonly IMapper _mapper;
 
-        public VillaNumberController(IVillaNumberRepository villaNumberRepository, IMapper mapper, IVillaRepository villaRepository)
+        public VillaNumberAPIController(IVillaNumberRepository villaNumberRepository, IMapper mapper, IVillaRepository villaRepository)
         {
             _apiResponse = new ApiResponse() { ErrorMessages = new List<string>() };
             _villaNumberRepository = villaNumberRepository;
@@ -27,14 +30,16 @@ namespace MagicVilla_VillaAPI.Controllers
             _villaRepository = villaRepository;
         }
 
-        
+
         [HttpGet]
+        // the attribute below maps the endpoint to the version that we've provided inside it, and this version should also be added inside ApiVersion attribute above controller, but actually we don't need this 
+        //[MapToApiVersion("1.0")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<ApiResponse>> GetVillaNumbers()
         {
             try
             {
-                IEnumerable<VillaNumber> villaNumbers = await _villaNumberRepository.GetAllAsync(includeProperties:"Villa");
+                IEnumerable<VillaNumber> villaNumbers = await _villaNumberRepository.GetAllAsync(includeProperties: "Villa");
                 _apiResponse.Result = _mapper.Map<List<VillaNumberDTO>>(villaNumbers);
                 _apiResponse.StatusCode = HttpStatusCode.OK;
                 return Ok(_apiResponse);
@@ -47,7 +52,7 @@ namespace MagicVilla_VillaAPI.Controllers
             return _apiResponse;
         }
 
-        
+
         [HttpGet("{villaNo:int}", Name = "GetVillaNumber")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -65,7 +70,7 @@ namespace MagicVilla_VillaAPI.Controllers
                     _apiResponse.IsSuccess = false;
                     return BadRequest(_apiResponse); //400
                 }
-                VillaNumber villaNumber = await _villaNumberRepository.GetAsync(x => x.VillaNo == villaNo , tracked : false , includeProperties : "Villa");
+                VillaNumber villaNumber = await _villaNumberRepository.GetAsync(x => x.VillaNo == villaNo, tracked: false, includeProperties: "Villa");
                 if (villaNumber is null)
                 {
                     _apiResponse.ErrorMessages.Add(HttpStatusCode.NotFound.ToString());
@@ -96,7 +101,7 @@ namespace MagicVilla_VillaAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse>> CreateVillaNumber([FromBody]VillaNumberCreateDTO villaNumberCreateDTO)
+        public async Task<ActionResult<ApiResponse>> CreateVillaNumber([FromBody] VillaNumberCreateDTO villaNumberCreateDTO)
         {
             try
             {

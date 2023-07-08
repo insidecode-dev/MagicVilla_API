@@ -7,7 +7,7 @@ namespace MagicVilla_Web.Services
     public class VillaNumberService : BaseService, IVillaNumberService
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private string _url;
+        private string? _url;
         public VillaNumberService(IHttpClientFactory httpClientFactory, IConfiguration configuration) : base(httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
@@ -20,7 +20,7 @@ namespace MagicVilla_Web.Services
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.POST,
                 Data = villaNumberCreateDTO,
-                ApiUrl = _url + "api/VillaNumber/",
+                ApiUrl = _url + "api/v1/VillaNumberAPI/",
                 Token = token
             });
         }
@@ -30,7 +30,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.DELETE,
-                ApiUrl = _url + $"api/VillaNumber/{villaNo}",
+                ApiUrl = _url + $"api/v1/VillaNumberAPI/{villaNo}",
                 Token = token
             });
         }
@@ -40,7 +40,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.GET,
-                ApiUrl = _url + "api/VillaNumber/",
+                ApiUrl = _url + "api/v1/VillaNumberAPI/",
                 Token = token
             });
         }
@@ -50,7 +50,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.GET,
-                ApiUrl = _url + $"api/VillaNumber/{villaNo}",
+                ApiUrl = _url + $"api/v1/VillaNumberAPI/{villaNo}",
                 Token = token
             });
         }
@@ -61,7 +61,7 @@ namespace MagicVilla_Web.Services
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.PUT,
                 Data = villaNumberUpdateDTO,
-                ApiUrl = _url + $"api/VillaNumber/{villaNumberUpdateDTO.VillaNo}",
+                ApiUrl = _url + $"api/v1/VillaNumberAPI/{villaNumberUpdateDTO.VillaNo}",
                 Token = token
             });
         }

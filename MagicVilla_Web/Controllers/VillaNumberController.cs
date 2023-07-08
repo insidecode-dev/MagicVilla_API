@@ -26,7 +26,7 @@ namespace MagicVilla_Web.Controllers
             _villaService = villaService;
         }
 
-        [Authorize(Roles = "admin")]
+        
         public async Task<IActionResult> IndexVillaNumber()
         {
             List<VillaNumberDTO> villaNumberDTO = null;

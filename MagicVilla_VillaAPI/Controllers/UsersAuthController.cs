@@ -8,6 +8,9 @@ namespace MagicVilla_VillaAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
+    // the attribute below makes it there for all versions, no matter what the version is   
+    [ApiVersionNeutral]
     public class UsersAuthController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
@@ -22,7 +25,7 @@ namespace MagicVilla_VillaAPI.Controllers
         public async Task<IActionResult> Login([FromBody] LogInRequestDto logInRequestDto)
         {
             var logInResponse = await _userRepository.LogIn(logInRequestDto);
-            if (logInResponse.LocalUser==null || string.IsNullOrEmpty(logInResponse.Token))
+            if (logInResponse.LocalUser == null || string.IsNullOrEmpty(logInResponse.Token))
             {
                 _apiResponse.StatusCode = HttpStatusCode.BadRequest;
                 _apiResponse.ErrorMessages.Add("username or password is incorrect");
@@ -30,9 +33,9 @@ namespace MagicVilla_VillaAPI.Controllers
                 return BadRequest(_apiResponse);
             }
 
-            _apiResponse.IsSuccess=true;
+            _apiResponse.IsSuccess = true;
             _apiResponse.Result = logInResponse;
-            _apiResponse.StatusCode=HttpStatusCode.OK;
+            _apiResponse.StatusCode = HttpStatusCode.OK;
             return Ok(_apiResponse);
         }
 
@@ -56,8 +59,8 @@ namespace MagicVilla_VillaAPI.Controllers
                 _apiResponse.ErrorMessages.Add("error while registration");
                 return BadRequest(_apiResponse);
             }
-            _apiResponse.IsSuccess=true;                
-            _apiResponse.StatusCode=HttpStatusCode.OK; 
+            _apiResponse.IsSuccess = true;
+            _apiResponse.StatusCode = HttpStatusCode.OK;
             return Ok(_apiResponse);
         }
     }

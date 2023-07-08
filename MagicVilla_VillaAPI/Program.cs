@@ -81,7 +81,68 @@ builder.Services.AddSwaggerGen(options =>
             new List<string>()
         }
     });
+
+    // creating a swagger document for our specified version 
+    // I created swagger documentation for v1
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1.0",
+        Title = "Magic Villa V1",
+        Description = "API to manage Villa",
+        TermsOfService = new Uri("https://www.postman.com/"),
+        Contact = new OpenApiContact
+        {
+            Name = "insidecode",
+            Url = new Uri("https://github.com/insidecode-dev")
+        },
+        License = new OpenApiLicense
+        {
+            Name = "Example License",
+            Url= new Uri("https://www.google.com/search?q=license&oq=license&aqs=chrome..69i57.3695j0j7&sourceid=chrome&ie=UTF-8")
+        }
+    });
+
+    // I created swagger documentation for v2
+    options.SwaggerDoc("v2", new OpenApiInfo
+    {
+        Version = "v2.0",
+        Title = "Magic Villa V2",
+        Description = "API to manage Villa",
+        TermsOfService = new Uri("https://www.postman.com/"),
+        Contact = new OpenApiContact
+        {
+            Name = "insidecode",
+            Url = new Uri("https://github.com/insidecode-dev")
+        },
+        License = new OpenApiLicense
+        {
+            Name = "Example License",
+            Url = new Uri("https://www.google.com/search?q=license&oq=license&aqs=chrome..69i57.3695j0j7&sourceid=chrome&ie=UTF-8")
+        }
+    });
 });
+
+// with the line below versioning support has been added to api 
+builder.Services.AddApiVersioning(options =>
+{
+    // without the configuration below when we run our application we get error llike api version is not specified, because AddApiVersioning requires version from our endpoints and I've not still provided endpoints with API Version attribute 
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+    
+    // with enabling the property below we'll be able to see supported versions in response header as api-supported-versions
+    options.ReportApiVersions = true;
+});
+
+
+// xxxxxxxxxxxxxxx
+builder.Services.AddVersionedApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+
+    // this property makes it possible for not to entering version of endpoint in each request, it will be automatically set
+    options.SubstituteApiVersionInUrl = true;
+});
+
 
 var app = builder.Build();
 
@@ -89,7 +150,14 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        // this is the first version of swagger, we override it below 
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Magic_VillaV1");
+
+        // here we add another version for ourself
+        options.SwaggerEndpoint("/swagger/v2/swagger.json", "Magic_VillaV2");
+    });
 }
 
 app.UseHttpsRedirection();

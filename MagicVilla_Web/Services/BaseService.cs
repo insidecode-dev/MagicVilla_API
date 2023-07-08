@@ -11,7 +11,7 @@ namespace MagicVilla_Web.Services
     public class BaseService : IBaseService
     {
         public ApiResponse responseModel { get; set; }
-        public IHttpClientFactory _httpClientFactory { get; set; }
+        private IHttpClientFactory _httpClientFactory { get; set; }
         public BaseService(IHttpClientFactory httpClientFactory)
         {
             responseModel = new();
@@ -56,7 +56,7 @@ namespace MagicVilla_Web.Services
                 }
 
                 // It initializes an HttpResponseMessage object called apiResponse and sends the request asynchronously using the SendAsync method of the HttpClient. The response is awaited to ensure the function waits for the API response.
-                HttpResponseMessage apiRespone = null;
+                HttpResponseMessage? apiRespone = null;
 
 
                 //validating token before sending request
@@ -74,9 +74,9 @@ namespace MagicVilla_Web.Services
                 try
                 {
                     // in code line below we initialize ErrorMessages property of ApiResponse object with the string value of apiContent
-                    ApiResponse ApiResponse = JsonConvert.DeserializeObject<ApiResponse>(apiContent);
+                    ApiResponse? ApiResponse = JsonConvert.DeserializeObject<ApiResponse>(apiContent);
                     // in line below we check if status code successful or not 
-                    if (apiRespone.StatusCode > (System.Net.HttpStatusCode) 299)
+                    if (/*we check ApiResponse because apiResponse may not bu null but its required  fields may be null that we work on*/ApiResponse!=null && apiRespone.StatusCode > (System.Net.HttpStatusCode) 299)
                     {
                         ApiResponse.StatusCode = apiRespone.StatusCode; //will try to make it generic !!!!!!!!! 
                         ApiResponse.IsSuccess = false;
@@ -85,10 +85,10 @@ namespace MagicVilla_Web.Services
                         return returnObj;
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                   var exceptionResponse = JsonConvert.DeserializeObject<T>(apiContent);
-                    return exceptionResponse;
+                   var exceptionResponse = JsonConvert.DeserializeObject<T>(apiContent); 
+                    return exceptionResponse ;
                 }
 
                 var APIResponse = JsonConvert.DeserializeObject<T>(apiContent);

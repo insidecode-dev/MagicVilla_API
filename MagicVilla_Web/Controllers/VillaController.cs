@@ -20,7 +20,7 @@ namespace MagicVilla_Web.Controllers
             _mapper = mapper;
         }
 
-        [Authorize(Roles = "admin")]
+        
         public async Task<IActionResult> Index()
         {
             List<VillaDTO> villaDTO = new();
