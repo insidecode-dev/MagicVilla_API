@@ -8,8 +8,10 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
+//using Newtonsoft.Json;
 using System.Net;
 using System.Web;
+using System.Text.Json;
 
 
 namespace MagicVilla_VillaAPI.Controllers.v1
@@ -47,11 +49,11 @@ namespace MagicVilla_VillaAPI.Controllers.v1
         [ProducesResponseType(StatusCodes.Status403Forbidden)]// if I'm admin and if this is for custom role it returns this http status code
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]// if I'm not authorized, it means if I'm not logged in and got a jwt token 
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<ApiResponse>> GetVillasAsync([FromQuery(Name = "FilterOccupancy")] int? occupancy, [FromQuery] string? search, [FromQuery(Name ="how many villa ?")] int _pageSize = 2, [FromQuery(Name = "which page ?")] int _pageNumber=1)
+        public async Task<ActionResult<ApiResponse>> GetVillasAsync([FromQuery(Name = "FilterOccupancy")] int? occupancy, [FromQuery] string? search, [FromQuery(Name ="how many villa ?")] int _pageSize = 0, [FromQuery(Name = "which page ?")] int _pageNumber=1)
         {
             try
             {
-                // added filtering for Occupamf
+                // added filtering for Occupancy
                 IEnumerable<Villa>? villas = null;
                 if (occupancy>0)
                 {
@@ -67,6 +69,12 @@ namespace MagicVilla_VillaAPI.Controllers.v1
                 {
                     villas = villas.Where(x=> x.Amenity.ToLower().Contains(search.ToLower()) || x.Name.ToLower().Contains(search.ToLower()));
                 }
+
+                
+                //adding pahgination information to header
+                PaginationForResponseHeader pgResponseHeader = new() { PageNumber=_pageNumber, PageSize=_pageSize};
+                //Response is property of ControllerBase class, its type is HttpResponse, that manipulates HttpResponse for executing action
+                Response.Headers.Add("Pagination",JsonSerializer.Serialize(pgResponseHeader));
 
 
                 _apiResponse.Result = _mapper.Map<List<VillaDTO>>(villas);

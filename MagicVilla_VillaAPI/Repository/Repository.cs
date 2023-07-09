@@ -44,7 +44,7 @@ namespace MagicVilla_VillaAPI.Repository
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null, int pageSize = 3, int pageNumber = 1)
+        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null, int pageSize = 0, int pageNumber = 1)
         {
             IQueryable<T> query = _dbSet;
             if (filter is not null)
@@ -53,6 +53,7 @@ namespace MagicVilla_VillaAPI.Repository
             }
 
             //pagination
+            //with condition below if pageSize is provided it filters as given value, else it retrieves all the records
             if (pageSize>0)
             {
                 if (pageSize>100)
