@@ -19,6 +19,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 });
 
+// configurong caching 
+builder.Services.AddResponseCaching();
+
 //registering repository
 builder.Services.AddScoped<IVillaRepository, VillaRepository>();
 builder.Services.AddScoped<IVillaNumberRepository, VillaNumberRepository>();
@@ -47,10 +50,15 @@ builder.Services.AddAuthentication(options =>
 //registering automapper 
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 
-builder.Services.AddControllers(/*options =>
+builder.Services.AddControllers(options =>
 {
-    options.ReturnHttpNotAcceptable = true;  //returns error message if return type format of response is not acceptable, it means if we do not add this manually and set true it will be false by default and as a result it will return data as json format by default even if the return format is switched to text/plain in swagger documentation no error will be throwed
-}*/)
+    //options.ReturnHttpNotAcceptable = true;  //returns error message if return type format of response is not acceptable, it means if we do not add this manually and set true it will be false by default and as a result it will return data as json format by default even if the return format is switched to text/plain in swagger documentation no error will be throwed
+
+    options.CacheProfiles.Add("Default30",new Microsoft.AspNetCore.Mvc.CacheProfile
+    {
+        Duration = 30
+    });
+})
     .AddNewtonsoftJson();  // we added AddNewtonsoftJson() extension method manually for HttpPatch reuqest
                            //.AddXmlDataContractSerializerFormatters();  //if we want to get response in xml format we add this service
 
