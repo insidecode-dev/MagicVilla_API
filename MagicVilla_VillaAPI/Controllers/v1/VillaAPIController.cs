@@ -38,16 +38,16 @@ namespace MagicVilla_VillaAPI.Controllers.v1
 
 
         [HttpGet]// this attribute will notify the swagger documentation that this endpoint is GET endpoint         
-        
+
         //[ResponseCache(Duration =30)] // with this attribute response of this endpoint is cached for 30seconds, it means once we sent request to this request, it will retrieve data from database but for next 30 seconds if we send request again it will not hit this endpoint, because result has been cached 
-        
+
         //but instead of writing as above we can CacheProfile, in startup we give it name and set parameters, in controller we just call CacheProfile with its name inside ResponseCache and use its all predefined settings
-        [ResponseCache(CacheProfileName ="Default30")]
-        
+        [ResponseCache(CacheProfileName = "Default30")]
+
         [ProducesResponseType(StatusCodes.Status403Forbidden)]// if I'm admin and if this is for custom role it returns this http status code
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]// if I'm not authorized, it means if I'm not logged in and got a jwt token 
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<ApiResponse>> GetVillasAsync([FromQuery(Name ="FilterOccupancy")] int? occupancy, [FromQuery] string? search)
+        public async Task<ActionResult<ApiResponse>> GetVillasAsync([FromQuery(Name = "FilterOccupancy")] int? occupancy, [FromQuery] string? search, [FromQuery(Name ="how many villa ?")] int _pageSize = 2, [FromQuery(Name = "which page ?")] int _pageNumber=1)
         {
             try
             {
@@ -55,11 +55,11 @@ namespace MagicVilla_VillaAPI.Controllers.v1
                 IEnumerable<Villa>? villas = null;
                 if (occupancy>0)
                 {
-                    villas = await _villaRepository.GetAllAsync(x => x.Occupancy == occupancy);
+                    villas = await _villaRepository.GetAllAsync(x => x.Occupancy == occupancy, pageSize:_pageSize, pageNumber:_pageNumber);
                 }
                 else
                 {
-                    villas = await _villaRepository.GetAllAsync();
+                    villas = await _villaRepository.GetAllAsync(pageSize: _pageSize, pageNumber: _pageNumber);
                 }
 
                 // added search for amenity and name properties 

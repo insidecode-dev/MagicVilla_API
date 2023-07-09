@@ -44,12 +44,25 @@ namespace MagicVilla_VillaAPI.Repository
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null)
+        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null, int pageSize = 3, int pageNumber = 1)
         {
             IQueryable<T> query = _dbSet;
             if (filter is not null)
             {
                 query = query.Where(filter);
+            }
+
+            //pagination
+            if (pageSize>0)
+            {
+                if (pageSize>100)
+                {
+                    // pageSize defines how many records should be retrieved at a time
+                    pageSize = 100;
+                }
+
+                // this is basic formula, it skips all records except last page's records that is why we write -1 , and takes records as same inside pageSize quantity
+                query = query.Skip(pageSize * (pageNumber - 1)).Take(pageSize);
             }
 
             if (includeProperties != null)
