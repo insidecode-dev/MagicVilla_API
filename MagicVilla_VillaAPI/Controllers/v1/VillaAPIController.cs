@@ -47,10 +47,11 @@ namespace MagicVilla_VillaAPI.Controllers.v1
         [ProducesResponseType(StatusCodes.Status403Forbidden)]// if I'm admin and if this is for custom role it returns this http status code
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]// if I'm not authorized, it means if I'm not logged in and got a jwt token 
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<ApiResponse>> GetVillasAsync([FromQuery(Name ="FilterOccupancy")] int? occupancy)
+        public async Task<ActionResult<ApiResponse>> GetVillasAsync([FromQuery(Name ="FilterOccupancy")] int? occupancy, [FromQuery] string? search)
         {
             try
             {
+                // added filtering for Occupamf
                 IEnumerable<Villa>? villas = null;
                 if (occupancy>0)
                 {
@@ -60,7 +61,14 @@ namespace MagicVilla_VillaAPI.Controllers.v1
                 {
                     villas = await _villaRepository.GetAllAsync();
                 }
-                
+
+                // added search for amenity and name properties 
+                if (!string.IsNullOrEmpty(search))
+                {
+                    villas = villas.Where(x=> x.Amenity.ToLower().Contains(search.ToLower()) || x.Name.ToLower().Contains(search.ToLower()));
+                }
+
+
                 _apiResponse.Result = _mapper.Map<List<VillaDTO>>(villas);
                 // find solution for dynamically insert code of httpsstatus code 
                 _apiResponse.StatusCode = HttpStatusCode.OK;
