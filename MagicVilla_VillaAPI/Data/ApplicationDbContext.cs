@@ -1,9 +1,10 @@
 ﻿using MagicVilla_VillaAPI.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace MagicVilla_VillaAPI.Data
 {
-    public class ApplicationDbContext:DbContext 
+    public class ApplicationDbContext:IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbContextOptions):base(dbContextOptions) { }
         
@@ -11,6 +12,8 @@ namespace MagicVilla_VillaAPI.Data
         public DbSet<VillaNumber> VillaNumbers { get; set; }
         public DbSet<LocalUser> LocalUsers { get; set; }
 
+        //after identity
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -76,6 +79,10 @@ namespace MagicVilla_VillaAPI.Data
                   CreatedDate = DateTime.Now
               });
 
+            // after identity
+
+            // reason I send modelbuilder to base.OnModelCreating is keys of identity table are mapped in the on model creating of the IdentityDbContext, and if that method is not called we'll end up getting the error message in migrations, as a result, when we add that line below that will create all the key mapping that are needed 
+            //base.OnModelCreating(modelBuilder); // 
         }
     }
 }

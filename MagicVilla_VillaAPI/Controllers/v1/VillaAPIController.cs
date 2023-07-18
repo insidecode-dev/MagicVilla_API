@@ -8,16 +8,18 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
-//using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System.Net;
 using System.Web;
-using System.Text.Json;
+//using System.Text.Json;
 
 
 namespace MagicVilla_VillaAPI.Controllers.v1
 {
     //[Route("api/VillaAPI")] this is the same as below but [controller attribute is better because if any changes will be made in name of controller the name inside Route attribute should be changed, and this is not a good practise and it is called hardcode 
+    
     [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1.0")]
 
     // [ApiController] attribute ensures that this is a api controller
     // It also gives us some additional help on the controller, it identifies that this is an api controller and it includes some basic features for example when using validations in model or entity, makes model validation is active, otherwise we should use ModelState.IsValid in each action that we use entity for model validation 
@@ -74,7 +76,7 @@ namespace MagicVilla_VillaAPI.Controllers.v1
                 //adding pahgination information to header
                 PaginationForResponseHeader pgResponseHeader = new() { PageNumber=_pageNumber, PageSize=_pageSize};
                 //Response is property of ControllerBase class, its type is HttpResponse, that manipulates HttpResponse for executing action
-                Response.Headers.Add("Pagination",JsonSerializer.Serialize(pgResponseHeader));
+                Response.Headers.Add("Pagination",JsonConvert.SerializeObject(pgResponseHeader));
 
 
                 _apiResponse.Result = _mapper.Map<List<VillaDTO>>(villas);
@@ -126,10 +128,11 @@ namespace MagicVilla_VillaAPI.Controllers.v1
             return _apiResponse;
         }
 
+        [HttpPost("NewVilla", Name = "CreateVilla")]
         [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status403Forbidden)] // if I'm admin and if this is for custom role it returns this http status code
         [ProducesResponseType(StatusCodes.Status401Unauthorized)] // if I'm not authorized, it means if I'm not logged in and got a jwt token 
-        [HttpPost("NewVilla", Name = "CreateVilla")] // value inside Name parameter is used for url generation, when requesting an endpoint in visual studio your request is sent to the value inside Name parameter, but a string(NewVilla) before Name parameter is just how you see as the name of endpoint in swagger documentation, when you sent request in swagger doumentation or postman you send it using this name        
+        //[HttpPost("NewVilla", Name = "CreateVilla")] // value inside Name parameter is used for url generation, when requesting an endpoint in visual studio your request is sent to the value inside Name parameter, but a string(NewVilla) before Name parameter is just how you see as the name of endpoint in swagger documentation, when you sent request in swagger doumentation or postman you send it using this name        
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -147,7 +150,7 @@ namespace MagicVilla_VillaAPI.Controllers.v1
 
                 if (createDTO is null)
                 {
-                    return BadRequest();
+                    return BadRequest(createDTO);
                 }
 
                 var villa = _mapper.Map<Villa>(createDTO);
@@ -163,6 +166,7 @@ namespace MagicVilla_VillaAPI.Controllers.v1
                 _apiResponse.IsSuccess = false;
                 _apiResponse.ErrorMessages.Add(ex.Message);
             }
+            Response.Headers.Add("Content-Type", "application/json");   
             return _apiResponse;
         }
 
@@ -199,7 +203,8 @@ namespace MagicVilla_VillaAPI.Controllers.v1
             return _apiResponse;
         }
 
-        [Authorize(Roles = "admin")]
+        //[Authorize(Roles = "admin")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpPut("{id:int}", Name = "UpdateVilla")]

@@ -1,7 +1,6 @@
 ﻿using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.Dto;
 using MagicVilla_VillaAPI.Repository.IRepository;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 namespace MagicVilla_VillaAPI.Controllers
@@ -61,6 +60,7 @@ namespace MagicVilla_VillaAPI.Controllers
             }
             _apiResponse.IsSuccess = true;
             _apiResponse.StatusCode = HttpStatusCode.OK;
+            _apiResponse.Result = user;
             return Ok(_apiResponse);
         }
     }
