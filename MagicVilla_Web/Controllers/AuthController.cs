@@ -5,6 +5,7 @@ using MagicVilla_Web.Services.IServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -65,7 +66,22 @@ namespace MagicVilla_Web.Controllers
 
         [HttpGet]
         public IActionResult Register()
-        {            
+        {
+            // we initiallize roles from code we write in visual studio, and these roles are executed in memory, I mean it does not come from database, as a result, if such role does not exist, it will be created (Register method of UserRespository in api)
+            var roleList = new List<SelectListItem>
+            {
+                new SelectListItem
+                {
+                    Text = StaticDetails.Admin,
+                    Value = StaticDetails.Admin
+                },
+                new SelectListItem
+                {
+                    Text = StaticDetails.Customer,
+                    Value = StaticDetails.Customer
+                }
+            };
+            ViewBag.RoleList = roleList;
             return View();
         }
 
@@ -73,11 +89,29 @@ namespace MagicVilla_Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegistrationRequestDTO registrationRequestDTO)
         {
+            if (string.IsNullOrEmpty(registrationRequestDTO.Role))
+            {
+                registrationRequestDTO.Role = StaticDetails.Customer;
+            }
             ApiResponse? apiResponse = await _authService.RegisterAsync<ApiResponse>(registrationRequestDTO);
             if (apiResponse != null && apiResponse.IsSuccess)
             {
                 return RedirectToAction("LogIn");
             }
+            var roleList = new List<SelectListItem>
+            {
+                new SelectListItem
+                {
+                    Text = StaticDetails.Admin,
+                    Value = StaticDetails.Admin
+                },
+                new SelectListItem
+                {
+                    Text = StaticDetails.Customer,
+                    Value = StaticDetails.Customer
+                }
+            };
+            ViewBag.RoleList = roleList;
             return View();
         }
 

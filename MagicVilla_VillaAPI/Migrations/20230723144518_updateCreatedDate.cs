@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MagicVilla_VillaAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class AddIdentityUserTable : Migration
+    public partial class updateCreatedDate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -162,35 +162,35 @@ namespace MagicVilla_VillaAPI.Migrations
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedDate",
-                value: new DateTime(2023, 7, 9, 19, 55, 42, 275, DateTimeKind.Local).AddTicks(8239));
+                value: new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
 
             migrationBuilder.UpdateData(
                 table: "Villas",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedDate",
-                value: new DateTime(2023, 7, 9, 19, 55, 42, 275, DateTimeKind.Local).AddTicks(8256));
+                value: new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
 
             migrationBuilder.UpdateData(
                 table: "Villas",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedDate",
-                value: new DateTime(2023, 7, 9, 19, 55, 42, 275, DateTimeKind.Local).AddTicks(8258));
+                value: new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
 
             migrationBuilder.UpdateData(
                 table: "Villas",
                 keyColumn: "Id",
                 keyValue: 4,
                 column: "CreatedDate",
-                value: new DateTime(2023, 7, 9, 19, 55, 42, 275, DateTimeKind.Local).AddTicks(8260));
+                value: new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
 
             migrationBuilder.UpdateData(
                 table: "Villas",
                 keyColumn: "Id",
                 keyValue: 5,
                 column: "CreatedDate",
-                value: new DateTime(2023, 7, 9, 19, 55, 42, 275, DateTimeKind.Local).AddTicks(8262));
+                value: new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",

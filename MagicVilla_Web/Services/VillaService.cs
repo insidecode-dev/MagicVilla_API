@@ -1,6 +1,8 @@
-﻿using MagicVilla_Web.Models;
+﻿using MagicVilla_Utility;
+using MagicVilla_Web.Models;
 using MagicVilla_Web.Models.Dto;
 using MagicVilla_Web.Services.IServices;
+using static MagicVilla_Utility.StaticDetails;
 
 namespace MagicVilla_Web.Services
 {
@@ -20,8 +22,9 @@ namespace MagicVilla_Web.Services
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.POST,
                 Data = villaCreateDTO,
-                ApiUrl = _url + "api/v1/VillaAPI/NewVilla",
-                Token = token
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaAPI/NewVilla",
+                Token = token,
+                ContentType = ContentType.MultipartFormData
             });
         }
 
@@ -30,7 +33,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.DELETE,
-                ApiUrl = _url + $"api/v1/VillaAPI/{id}",
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaAPI/{id}",
                 Token = token
             });
         }
@@ -40,7 +43,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.GET,
-                ApiUrl = _url + "api/v1/VillaAPI/",
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaAPI/",
                 Token = token
             });
         }
@@ -50,7 +53,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.GET,
-                ApiUrl = _url + $"api/v1/VillaAPI/{id}",
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaAPI/{id}",
                 Token = token
             });
         }
@@ -61,8 +64,9 @@ namespace MagicVilla_Web.Services
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.PUT,
                 Data = villaUpdateDTO,
-                ApiUrl = _url + $"api/v1/VillaAPI/{villaUpdateDTO.Id}",
-                Token = token
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaAPI/{villaUpdateDTO.Id}",
+                Token = token,
+                ContentType = ContentType.MultipartFormData
             });
         }
     }

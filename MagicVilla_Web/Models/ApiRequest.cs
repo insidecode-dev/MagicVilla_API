@@ -16,5 +16,8 @@ namespace MagicVilla_Web.Models
 
         //
         public string Token { get; set; }
+
+        //
+        public ContentType ContentType { get; set; } = ContentType.Json;
     }
 }

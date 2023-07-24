@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json.Serialization;
+using static MagicVilla_Utility.StaticDetails;
 
 namespace MagicVilla_Web.Services
 {
@@ -26,16 +27,50 @@ namespace MagicVilla_Web.Services
 
                 //It creates an instance of HttpRequestMessage to represent the HTTP request and sets the "Accept" header to indicate that the expected response type is JSON.
                 HttpRequestMessage message = new();
-                message.Headers.Add("Accept", "application/json");
+
+                if (apiRequest.ContentType == ContentType.Json)
+                {
+                    message.Headers.Add("Accept", "application/json");
+                }
+                else if (apiRequest.ContentType == ContentType.MultipartFormData)
+                {
+                    message.Headers.Add("Accept", "*/*"); // this is for multipart form data
+                }
 
                 //message.Headers.Add("Content-Type", "application/json");
                 //It sets the request URI of the HttpRequestMessage based on the ApiRequest.ApiUrl property.
                 message.RequestUri = new(apiRequest.ApiUrl);
 
-                if (apiRequest.Data != null)
+                // we do this more dynamic because content is not just json string, it also consists of image
+                if (apiRequest.ContentType == ContentType.MultipartFormData)
                 {
-                    //If the ApiRequest.Data property is not null, it serializes the data object to JSON using JsonConvert.SerializeObject and sets it as the content of the HttpRequestMessage using StringContent.
-                    message.Content = new StringContent(JsonConvert.SerializeObject(apiRequest.Data), Encoding.UTF8, "application/json");
+                    var content = new MultipartFormDataContent();
+
+                    foreach (var property in apiRequest.Data.GetType().GetProperties())
+                    {
+                        var value = property.GetValue(apiRequest.Data);
+                        if (value is FormFile)
+                        {
+                            var file = (FormFile)value;
+                            if (file is not null)
+                            {
+                                content.Add(new StreamContent(file.OpenReadStream()), property.Name, file.FileName);
+                            }
+                        }
+                        else
+                        {
+                            content.Add(new StringContent(value == null ? "" : value.ToString()), property.Name);
+                        }
+                    }
+                    message.Content = content;
+                }
+                else
+                {
+                    if (apiRequest.Data != null)
+                    {
+                        //If the ApiRequest.Data property is not null, it serializes the data object to JSON using JsonConvert.SerializeObject and sets it as the content of the HttpRequestMessage using StringContent.
+                        message.Content = new StringContent(JsonConvert.SerializeObject(apiRequest.Data), Encoding.UTF8, "application/json");
+                    }
                 }
 
                 //Based on the ApiRequest.ApiType property, it sets the HttpMethod property of the HttpRequestMessage to the appropriate HTTP method (POST, PUT, DELETE, or GET).
@@ -70,13 +105,13 @@ namespace MagicVilla_Web.Services
                 // It reads the content of the API response as a string using ReadAsStringAsync.
                 var apiContent = await apiRespone.Content.ReadAsStringAsync();
 
-                
+
                 try
                 {
                     // in code line below we initialize ErrorMessages property of ApiResponse object with the string value of apiContent
                     ApiResponse? ApiResponse = JsonConvert.DeserializeObject<ApiResponse>(apiContent);
                     // in line below we check if status code successful or not 
-                    if (/*we check ApiResponse because apiResponse may not bu null but its required  fields may be null that we work on*/ApiResponse!=null && apiRespone.StatusCode > (System.Net.HttpStatusCode) 299)
+                    if (/*we check ApiResponse because apiResponse may not bu null but its required  fields may be null that we work on*/ApiResponse != null && apiRespone.StatusCode > (System.Net.HttpStatusCode)299)
                     {
                         ApiResponse.StatusCode = apiRespone.StatusCode; //will try to make it generic !!!!!!!!! 
                         ApiResponse.IsSuccess = false;
@@ -87,8 +122,8 @@ namespace MagicVilla_Web.Services
                 }
                 catch (Exception)
                 {
-                   var exceptionResponse = JsonConvert.DeserializeObject<T>(apiContent); 
-                    return exceptionResponse ;
+                    var exceptionResponse = JsonConvert.DeserializeObject<T>(apiContent);
+                    return exceptionResponse;
                 }
 
                 var APIResponse = JsonConvert.DeserializeObject<T>(apiContent);
@@ -98,7 +133,7 @@ namespace MagicVilla_Web.Services
 
 
             //If an exception occurs during the process (caught by the catch block), it creates an instance of ApiResponse and populates it with the error message from the exception. The ApiResponse is then serialized to JSON and deserialized to an object of type T (same as step 8) before being returned as the error response.
-            catch (Exception ex)    
+            catch (Exception ex)
             {
                 var dto = new ApiResponse
                 {
@@ -111,7 +146,7 @@ namespace MagicVilla_Web.Services
                 return APIResponse;
             }
 
-            
+
         }
     }
 }

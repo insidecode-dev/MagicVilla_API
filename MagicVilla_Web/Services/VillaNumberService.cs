@@ -1,4 +1,5 @@
-﻿using MagicVilla_Web.Models;
+﻿using MagicVilla_Utility;
+using MagicVilla_Web.Models;
 using MagicVilla_Web.Models.Dto;
 using MagicVilla_Web.Services.IServices;
 
@@ -20,7 +21,7 @@ namespace MagicVilla_Web.Services
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.POST,
                 Data = villaNumberCreateDTO,
-                ApiUrl = _url + "api/v1/VillaNumberAPI/",
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/",
                 Token = token
             });
         }
@@ -30,7 +31,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.DELETE,
-                ApiUrl = _url + $"api/v1/VillaNumberAPI/{villaNo}",
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/{villaNo}",
                 Token = token
             });
         }
@@ -40,7 +41,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.GET,
-                ApiUrl = _url + "api/v1/VillaNumberAPI/",
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/",
                 Token = token
             });
         }
@@ -50,7 +51,7 @@ namespace MagicVilla_Web.Services
             return SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.GET,
-                ApiUrl = _url + $"api/v1/VillaNumberAPI/{villaNo}",
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/{villaNo}",
                 Token = token
             });
         }
@@ -61,7 +62,7 @@ namespace MagicVilla_Web.Services
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.PUT,
                 Data = villaNumberUpdateDTO,
-                ApiUrl = _url + $"api/v1/VillaNumberAPI/{villaNumberUpdateDTO.VillaNo}",
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/{villaNumberUpdateDTO.VillaNo}",
                 Token = token
             });
         }

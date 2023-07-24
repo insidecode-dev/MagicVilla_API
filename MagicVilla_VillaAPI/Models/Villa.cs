@@ -18,6 +18,8 @@ namespace MagicVilla_VillaAPI.Models
         public int Occupancy { get; set; }
         public int Sqft { get; set; }
         public string? ImageUrl { get; set; }
+        // this is path to folder that keeps all the images, wwwroot
+        public string? ImageLocalPath { get; set; }
         public string? Amenity { get; set; }
     }
 }
