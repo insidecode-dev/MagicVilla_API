@@ -45,7 +45,7 @@ builder.Services.AddApiVersioning(options =>
 });
 
 
-// xxxxxxxxxxxxxxx
+// configuring the versioned API explorer
 builder.Services.AddVersionedApiExplorer(options =>
 {
     options.GroupNameFormat = "'v'VVV";

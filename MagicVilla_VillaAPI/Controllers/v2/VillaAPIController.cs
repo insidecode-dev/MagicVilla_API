@@ -279,7 +279,7 @@ namespace MagicVilla_VillaAPI.Controllers.v2
                 if (updateDTO == null || id != updateDTO.Id) return BadRequest(); //400
 
 
-                var villa = await _villaRepository.GetAsync(x => x.Id == id, false);
+                var villa = await _villaRepository.GetAsync(x => x.Id == updateDTO.Id, false);
                 if (villa is null) { return NotFound(); } //404
                 if (!ModelState.IsValid) { return BadRequest(ModelState); } //400
 
@@ -298,7 +298,7 @@ namespace MagicVilla_VillaAPI.Controllers.v2
                         }
                     }
 
-                    // createing name of image file with Id of villa in database and extension with image's extension 
+                    // creating name of image file with Id of villa in database and extension with image's extension 
                     string fileName = updateDTO.Id.ToString() + Path.GetExtension(updateDTO.Image.FileName);
 
                     // after filename is ready, we create path to file inside application
@@ -346,48 +346,6 @@ namespace MagicVilla_VillaAPI.Controllers.v2
             return _apiResponse;
         }
 
-        [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [HttpPatch("{id:int}", Name = "UpdateVillaPartially")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse>> UpdateVillaPartiallyAsync(int id, JsonPatchDocument<VillaUpdateDTO> villaDTO)
-        {
-            try
-            {
-                if (id == 0) return BadRequest();
-
-                var villa = await _villaRepository.GetAsync(x => x.Id == id, false); // I use AsNoTracking here because by default ef core tracks the object retrieved from database, as the same time entity that is sent to Update() method is also being tracked, but both of these entities's id is same, and ef core cannot track two or more entity with the same id, as a result it throw exception
-
-                if (villa is null) return BadRequest();
-
-                //villaDTO contains just updated property, so we should create a VillaDTO object at first and initialize it with the villa object requested from database with id
-                var updatedVillaDTO = _mapper.Map<VillaUpdateDTO>(villa);
-
-                // then apply changes from jsonpatch object to our VillaDTO object
-                villaDTO.ApplyTo(updatedVillaDTO);
-
-                //and then creating a villa object to send Update method of Villas DbSet object             
-                var newVilla = _mapper.Map<Villa>(updatedVillaDTO);
-
-                //
-                if (!ModelState.IsValid) return BadRequest(ModelState);
-
-                //here is updated finally
-                await _villaRepository.UpdateAsync(newVilla);
-                _apiResponse.Result = newVilla;
-                _apiResponse.StatusCode = HttpStatusCode.NoContent;
-
-                return Ok(_apiResponse);
-            }
-            catch (Exception ex)
-            {
-                _apiResponse.ErrorMessages.Add(ex.Message);
-                _apiResponse.IsSuccess = false;
-            }
-            return _apiResponse;
-        }
+        
     }
 }

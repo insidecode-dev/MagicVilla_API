@@ -19,9 +19,15 @@ builder.Services.AddScoped<IVillaService, VillaService>();
 builder.Services.AddHttpClient<IVillaNumberService, VillaNumberService>();
 builder.Services.AddScoped<IVillaNumberService, VillaNumberService>();
 
-// registering services for AuthService api 
+// registering services for TokenProvider 
+builder.Services.AddScoped<ITokenProvider, TokenProvider>();
+
+// registering services for BaseService 
 builder.Services.AddHttpClient<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+// registering services for BaseService api 
+builder.Services.AddScoped<IBaseService, BaseService>();
 
 // registering 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

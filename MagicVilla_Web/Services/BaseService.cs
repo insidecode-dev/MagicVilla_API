@@ -13,12 +13,14 @@ namespace MagicVilla_Web.Services
     {
         public ApiResponse responseModel { get; set; }
         private IHttpClientFactory _httpClientFactory { get; set; }
-        public BaseService(IHttpClientFactory httpClientFactory)
+        private readonly ITokenProvider _tokenProvider;
+        public BaseService(IHttpClientFactory httpClientFactory, ITokenProvider tokenProvider)
         {
             responseModel = new();
             _httpClientFactory = httpClientFactory;
+            _tokenProvider = tokenProvider;
         }
-        public async Task<T> SendAsync<T>(ApiRequest apiRequest)
+        public async Task<T> SendAsync<T>(ApiRequest apiRequest, bool withBearer = true)
         {
             try
             {
@@ -40,6 +42,13 @@ namespace MagicVilla_Web.Services
                 //message.Headers.Add("Content-Type", "application/json");
                 //It sets the request URI of the HttpRequestMessage based on the ApiRequest.ApiUrl property.
                 message.RequestUri = new(apiRequest.ApiUrl);
+
+                //validating token before sending request
+                if (withBearer && _tokenProvider.GetToken()!=null)
+                {
+                    var token = _tokenProvider.GetToken();
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
+                }
 
                 // we do this more dynamic because content is not just json string, it also consists of image
                 if (apiRequest.ContentType == ContentType.MultipartFormData)
@@ -92,13 +101,7 @@ namespace MagicVilla_Web.Services
 
                 // It initializes an HttpResponseMessage object called apiResponse and sends the request asynchronously using the SendAsync method of the HttpClient. The response is awaited to ensure the function waits for the API response.
                 HttpResponseMessage? apiRespone = null;
-
-
-                //validating token before sending request
-                if (!string.IsNullOrEmpty(apiRequest.Token))
-                {
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiRequest.Token);
-                }
+                
 
                 apiRespone = await client.SendAsync(message);
 

@@ -5,65 +5,62 @@ using MagicVilla_Web.Services.IServices;
 
 namespace MagicVilla_Web.Services
 {
-    public class VillaNumberService : BaseService, IVillaNumberService
+    public class VillaNumberService : IVillaNumberService
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpClientFactory _httpClientFactory;        
+        private readonly IBaseService _baseService;
         private string? _url;
-        public VillaNumberService(IHttpClientFactory httpClientFactory, IConfiguration configuration) : base(httpClientFactory)
+        public VillaNumberService(IHttpClientFactory httpClientFactory, IConfiguration configuration, IBaseService baseService) 
         {
             _httpClientFactory = httpClientFactory;
             _url = configuration.GetValue<string>("ServiceURL:VillaAPI");
+            _baseService = baseService;
         }
 
-        public Task<T> CreateAsync<T>(VillaNumberCreateDTO villaNumberCreateDTO, string token)
+        public async Task<T> CreateAsync<T>(VillaNumberCreateDTO villaNumberCreateDTO)
         {
-            return SendAsync<T>(new ApiRequest()
+            return await _baseService.SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.POST,
                 Data = villaNumberCreateDTO,
-                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/",
-                Token = token
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/"
             });
         }
 
-        public Task<T> DeleteAsync<T>(int villaNo, string token)
+        public async Task<T> DeleteAsync<T>(int villaNo)
         {
-            return SendAsync<T>(new ApiRequest()
+            return await _baseService.SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.DELETE,
-                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/{villaNo}",
-                Token = token
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/{villaNo}"
             });
         }
 
-        public Task<T> GetAllAsync<T>(string token)
+        public async Task<T> GetAllAsync<T>()
         {
-            return SendAsync<T>(new ApiRequest()
+            return await _baseService.SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.GET,
-                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/",
-                Token = token
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/"
             });
         }
 
-        public Task<T> GetAsync<T>(int villaNo, string token)
+        public async Task<T> GetAsync<T>(int villaNo)
         {
-            return SendAsync<T>(new ApiRequest()
+            return await _baseService.SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.GET,
-                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/{villaNo}",
-                Token = token
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/{villaNo}"
             });
         }
 
-        public Task<T> UpdateAsync<T>(VillaNumberUpdateDTO villaNumberUpdateDTO, string token)
+        public async Task<T> UpdateAsync<T>(VillaNumberUpdateDTO villaNumberUpdateDTO)
         {
-            return SendAsync<T>(new ApiRequest()
+            return await _baseService.SendAsync<T>(new ApiRequest()
             {
                 ApiType = MagicVilla_Utility.StaticDetails.ApiType.PUT,
                 Data = villaNumberUpdateDTO,
-                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/{villaNumberUpdateDTO.VillaNo}",
-                Token = token
+                ApiUrl = _url + $"api/{StaticDetails.CurrentAPIVersion}/VillaNumberAPI/{villaNumberUpdateDTO.VillaNo}"
             });
         }
     }

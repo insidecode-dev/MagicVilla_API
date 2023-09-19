@@ -18,7 +18,7 @@ namespace MagicVilla_VillaAPI.Controllers.v1
 {
     //[Route("api/VillaAPI")] this is the same as below but [controller attribute is better because if any changes will be made in name of controller the name inside Route attribute should be changed, and this is not a good practise and it is called hardcode 
     
-    [Route("api/v{version:apiVersion}/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")] 
     [ApiVersion("1.0")]
 
     // [ApiController] attribute ensures that this is a api controller

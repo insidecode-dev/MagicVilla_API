@@ -23,8 +23,8 @@ namespace MagicVilla_VillaAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LogInRequestDto logInRequestDto)
         {
-            var logInResponse = await _userRepository.LogIn(logInRequestDto);
-            if (logInResponse.LocalUser == null || string.IsNullOrEmpty(logInResponse.Token))
+            var tokenDto = await _userRepository.LogIn(logInRequestDto);
+            if (tokenDto == null || string.IsNullOrEmpty(tokenDto.AccessToken))
             {
                 _apiResponse.StatusCode = HttpStatusCode.BadRequest;
                 _apiResponse.ErrorMessages.Add("username or password is incorrect");
@@ -33,7 +33,7 @@ namespace MagicVilla_VillaAPI.Controllers
             }
 
             _apiResponse.IsSuccess = true;
-            _apiResponse.Result = logInResponse;
+            _apiResponse.Result = tokenDto;
             _apiResponse.StatusCode = HttpStatusCode.OK;
             return Ok(_apiResponse);
         }

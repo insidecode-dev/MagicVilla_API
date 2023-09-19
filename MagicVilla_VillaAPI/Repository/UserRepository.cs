@@ -40,7 +40,7 @@ namespace MagicVilla_VillaAPI.Repository
             return false;
         }
 
-        public async Task<LogInResponseDTO> LogIn(LogInRequestDto logInRequestDTO)
+        public async Task<TokenDTO> LogIn(LogInRequestDto logInRequestDTO)
         {
             ApplicationUser? user = await _dbContext
                              .ApplicationUsers
@@ -52,15 +52,26 @@ namespace MagicVilla_VillaAPI.Repository
             // validating all two checks above 
             if (user is null || !isValidPassword)
             {
-                return new LogInResponseDTO()
+                return new TokenDTO()
                 {
-                    LocalUser = null,
-                    Token = ""
+                    AccessToken = ""
                 };
             }
 
+            var accessToken = await GetAccessToken(user);
+
+            //
+            return new TokenDTO()
+            {   
+                AccessToken = accessToken
+                //Role = roles.FirstOrDefault()
+            };
+        }
+
+        private async Task<string> GetAccessToken(ApplicationUser applicationUser)
+        {
             // we use user's role when generating token inside tokenDescription, that's why we retrieve user's role
-            var roles = await _userManager.GetRolesAsync(user);
+            var roles = await _userManager.GetRolesAsync(applicationUser);
 
             //
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -74,28 +85,23 @@ namespace MagicVilla_VillaAPI.Repository
             {
                 Subject = new ClaimsIdentity(new Claim[]
                     {
-                        new Claim(ClaimTypes.Name, user.UserName.ToString()),                        
+                        new Claim(ClaimTypes.Name, applicationUser.UserName.ToString()),
                         new Claim(ClaimTypes.Role, roles.FirstOrDefault()),
                     }),
                 Expires = DateTime.UtcNow.AddDays(7),
-                
+
                 // finally we create symmetric security key with our key variable 
                 SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
 
             // generating token 
-            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor); // after adding identity I extracted role from token itself
+            SecurityToken securityToken = tokenHandler.CreateToken(tokenDescriptor); // after adding identity I extracted role from token itself
 
-            //
-            return new LogInResponseDTO()
-            {
-                LocalUser = _mapper.Map<UserDTO>(user),
-                
-                //the line below will generate the token that we'll finally use
-                Token = tokenHandler.WriteToken(token)
-                //Role = roles.FirstOrDefault()
-            };
+            //the line below will generate the token that we'll finally use
+            var token = tokenHandler.WriteToken(securityToken);
+
+            return token;
         }
 
         public async Task<UserDTO> Register(RegistrationRequestDTO registrationRequestDTO)
