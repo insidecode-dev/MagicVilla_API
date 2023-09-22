@@ -63,5 +63,33 @@ namespace MagicVilla_VillaAPI.Controllers
             _apiResponse.Result = user;
             return Ok(_apiResponse);
         }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> GetNewTokenFromRefreshToken([FromBody] TokenDTO tokenDTO)
+        {
+            if (ModelState.IsValid)
+            {
+                var tokenDtoResponse = await _userRepository.RefreshAccessToken(tokenDTO);
+
+                if (tokenDtoResponse==null || string.IsNullOrEmpty(tokenDtoResponse.AccessToken))
+                {
+                    _apiResponse.StatusCode = HttpStatusCode.BadRequest;
+                    _apiResponse.IsSuccess = false;
+                    _apiResponse.ErrorMessages.Add("Token invalid");
+                    return BadRequest(_apiResponse);
+                }
+
+                _apiResponse.IsSuccess= true;
+                _apiResponse.Result= tokenDtoResponse;
+                _apiResponse.StatusCode= HttpStatusCode.OK;
+                return Ok(_apiResponse);
+            }
+            else
+            {
+                _apiResponse.IsSuccess = false;
+                _apiResponse.Result = "Invalid input";
+                return BadRequest(_apiResponse);    
+            }            
+        }
     }
 }

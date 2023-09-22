@@ -11,6 +11,7 @@
         }
 
         public static string AccessToken = "JWTToken";
+        public static string RefreshToken = "JWTToken";
         public static string CurrentAPIVersion = "v2";
         public static string Admin = "admin";
         public static string Customer = "customer";

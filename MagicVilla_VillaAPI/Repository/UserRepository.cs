@@ -14,7 +14,7 @@ namespace MagicVilla_VillaAPI.Repository
 {
     public class UserRepository : IUserRepository
     {
-        private readonly ApplicationDbContext _dbContext;        
+        private readonly ApplicationDbContext _dbContext;
         private string? secretKey;
 
         // after identity 
@@ -44,10 +44,10 @@ namespace MagicVilla_VillaAPI.Repository
         {
             ApplicationUser? user = await _dbContext
                              .ApplicationUsers
-                             .FirstOrDefaultAsync(x=>x.UserName.ToLower()==logInRequestDTO.UserName.ToLower());            
+                             .FirstOrDefaultAsync(x => x.UserName.ToLower() == logInRequestDTO.UserName.ToLower());
 
             // checking if the password of user found by username is same with password in requestlogin
-            var isValidPassword = await _userManager.CheckPasswordAsync(user,logInRequestDTO.Password);
+            var isValidPassword = await _userManager.CheckPasswordAsync(user, logInRequestDTO.Password);
 
             // validating all two checks above 
             if (user is null || !isValidPassword)
@@ -58,17 +58,20 @@ namespace MagicVilla_VillaAPI.Repository
                 };
             }
 
-            var accessToken = await GetAccessToken(user);
+            var jwtTokenId = $"JTI{Guid.NewGuid()}";
+            var accessToken = await GetAccessToken(user, jwtTokenId);
+            var refreshToken = await CreateNewRefreshToken(user.Id, jwtTokenId);
 
             //
             return new TokenDTO()
-            {   
-                AccessToken = accessToken
+            {
+                AccessToken = accessToken,
                 //Role = roles.FirstOrDefault()
+                RefreshToken = refreshToken
             };
         }
 
-        private async Task<string> GetAccessToken(ApplicationUser applicationUser)
+        private async Task<string> GetAccessToken(ApplicationUser applicationUser, string jwtTokenId)
         {
             // we use user's role when generating token inside tokenDescription, that's why we retrieve user's role
             var roles = await _userManager.GetRolesAsync(applicationUser);
@@ -87,8 +90,10 @@ namespace MagicVilla_VillaAPI.Repository
                     {
                         new Claim(ClaimTypes.Name, applicationUser.UserName.ToString()),
                         new Claim(ClaimTypes.Role, roles.FirstOrDefault()),
+                        new Claim(JwtRegisteredClaimNames.Jti, jwtTokenId), // jti represents unique id for jwt token
+                        new Claim(JwtRegisteredClaimNames.Sub, applicationUser.Id)
                     }),
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddMinutes(1),
 
                 // finally we create symmetric security key with our key variable 
                 SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -121,13 +126,13 @@ namespace MagicVilla_VillaAPI.Repository
                 UserName = registrationRequestDTO.UserName,
                 Email = registrationRequestDTO.UserName,
                 NormalizedEmail = registrationRequestDTO.UserName.ToUpper(),
-                Name = registrationRequestDTO.Name                
+                Name = registrationRequestDTO.Name
             };
 
             try
             {
                 // the password below is not a hashed password, we'll just write the password and it will automatically hash that and create the user 
-                var result = await _userManager.CreateAsync(user:localUser,password:registrationRequestDTO.Password);
+                var result = await _userManager.CreateAsync(user: localUser, password: registrationRequestDTO.Password);
 
                 // flag indicating whether if the operation succeeded or not 
                 if (result.Succeeded)
@@ -136,9 +141,9 @@ namespace MagicVilla_VillaAPI.Repository
                     {
                         await _roleManager.CreateAsync(new IdentityRole(registrationRequestDTO.Role));
                     }
-                    await _userManager.AddToRoleAsync(user:localUser, role:registrationRequestDTO.Role);
+                    await _userManager.AddToRoleAsync(user: localUser, role: registrationRequestDTO.Role);
 
-                    var createdUser = await _dbContext.ApplicationUsers.FirstOrDefaultAsync(x=>x.UserName==registrationRequestDTO.UserName);
+                    var createdUser = await _dbContext.ApplicationUsers.FirstOrDefaultAsync(x => x.UserName == registrationRequestDTO.UserName);
 
                     return _mapper.Map<UserDTO>(createdUser);
                 }
@@ -146,11 +151,107 @@ namespace MagicVilla_VillaAPI.Repository
                 // add error message if this is not successful
             }
             catch (Exception)
-            { 
-                
+            {
+
             }
-           
+
             return new UserDTO();
+        }
+
+        public async Task<TokenDTO> RefreshAccessToken(TokenDTO tokenDTO)
+        {
+            // find an existing refresh token
+            var existingRefreshToken = await _dbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Refresh_Token == tokenDTO.RefreshToken);
+            if (existingRefreshToken != null)
+            {
+                return new TokenDTO();
+            }
+
+            // compare data from existing refresh and access token provided and if there is any missmatch then consider it as a fraud
+            var accessTokenData = GetAccessTokenData(tokenDTO.AccessToken);
+            if (!accessTokenData.isSuccessful || accessTokenData.UserId != existingRefreshToken.UserId || accessTokenData.TokenId != existingRefreshToken.JwtTokenId)
+            {
+                existingRefreshToken.IsValid = false;
+                await _dbContext.SaveChangesAsync();
+                return new TokenDTO();
+            }
+
+            // when someone tries to use not valid refresh token, fraud possible
+            if (!existingRefreshToken.IsValid)
+            {
+                var chainRecords = await _dbContext.RefreshTokens.Where(u => u.UserId == existingRefreshToken.UserId && u.JwtTokenId == existingRefreshToken.JwtTokenId)
+                    .ExecuteUpdateAsync(u=>u.SetProperty(refreshToken=>refreshToken.IsValid, false)); // new feature, bulk update 
+
+                //foreach (var item in chainRecords)
+                //{
+                //    item.IsValid = false;
+                //}
+                //_dbContext.UpdateRange(chainRecords);
+                //await _dbContext.SaveChangesAsync();
+                return new TokenDTO();
+            }
+
+            // If just expired then mark as invalid and return empty
+            if (existingRefreshToken.ExpiresAt < DateTime.UtcNow)
+            {
+                existingRefreshToken.IsValid = false;
+                await _dbContext.SaveChangesAsync();
+                return new TokenDTO();
+            }
+
+            // replace old refresh token with a new one with updated expire date 
+            var newRefreshToken = await CreateNewRefreshToken(existingRefreshToken.UserId, existingRefreshToken.JwtTokenId);
+
+            // revoke existing refresh token
+            existingRefreshToken.IsValid = false;
+            await _dbContext.SaveChangesAsync();
+
+            // generate new access token
+            var applicationUser = await _dbContext.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == existingRefreshToken.UserId);
+            if (applicationUser == null)
+            {
+                return new TokenDTO();
+            }
+
+            var newAccessToken = await GetAccessToken(applicationUser, existingRefreshToken.JwtTokenId);
+
+            return new TokenDTO
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
+            };
+        }
+
+        private async Task<string> CreateNewRefreshToken(string userId, string tokenId)
+        {
+            RefreshToken refreshToken = new()
+            {
+                IsValid = true,
+                JwtTokenId = tokenId,
+                UserId = userId,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(3),
+                Refresh_Token = Guid.NewGuid() + "-" + Guid.NewGuid()
+            };
+            await _dbContext.RefreshTokens.AddAsync(refreshToken);
+            await _dbContext.SaveChangesAsync();
+            return refreshToken.Refresh_Token;
+        }
+
+        private (bool isSuccessful, string UserId, string TokenId) GetAccessTokenData(string accessToken)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwt = tokenHandler.ReadJwtToken(accessToken);
+
+                var jwtTokenId = jwt.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Jti).Value;
+                var userId = jwt.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Sub).Value;
+                return (true, userId, jwtTokenId);
+            }
+            catch (Exception)
+            {
+                return (false, null, null);
+            }
         }
     }
 }
