@@ -71,7 +71,7 @@ namespace MagicVilla_VillaAPI.Controllers
             {
                 var tokenDtoResponse = await _userRepository.RefreshAccessToken(tokenDTO);
 
-                if (tokenDtoResponse==null || string.IsNullOrEmpty(tokenDtoResponse.AccessToken))
+                if (tokenDtoResponse == null || string.IsNullOrEmpty(tokenDtoResponse.AccessToken))
                 {
                     _apiResponse.StatusCode = HttpStatusCode.BadRequest;
                     _apiResponse.IsSuccess = false;
@@ -79,17 +79,34 @@ namespace MagicVilla_VillaAPI.Controllers
                     return BadRequest(_apiResponse);
                 }
 
-                _apiResponse.IsSuccess= true;
-                _apiResponse.Result= tokenDtoResponse;
-                _apiResponse.StatusCode= HttpStatusCode.OK;
+                _apiResponse.IsSuccess = true;
+                _apiResponse.Result = tokenDtoResponse;
+                _apiResponse.StatusCode = HttpStatusCode.OK;
                 return Ok(_apiResponse);
             }
             else
             {
                 _apiResponse.IsSuccess = false;
                 _apiResponse.Result = "Invalid input";
-                return BadRequest(_apiResponse);    
-            }            
+                return BadRequest(_apiResponse);
+            }
+        }
+
+        [HttpPost("revoke")]
+        public async Task<IActionResult> RevokeRefreshToken([FromBody] TokenDTO tokenDTO)
+        {
+            if (ModelState.IsValid)
+            {
+                await _userRepository.RevokefreshToken(tokenDTO);
+                _apiResponse.StatusCode = HttpStatusCode.OK;
+                _apiResponse.IsSuccess = true;
+                return Ok(_apiResponse);
+            }
+
+            _apiResponse.StatusCode = HttpStatusCode.BadRequest;
+            _apiResponse.IsSuccess = false;
+            _apiResponse.Result = "Invalid input";
+            return BadRequest(_apiResponse);
         }
     }
 }

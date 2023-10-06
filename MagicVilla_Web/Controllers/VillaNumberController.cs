@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
-using MagicVilla_Utility;
 using MagicVilla_Web.Models;
 using MagicVilla_Web.Models.Dto;
 using MagicVilla_Web.Models.ViewModel;
-using MagicVilla_Web.Services;
+
 using MagicVilla_Web.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +25,7 @@ namespace MagicVilla_Web.Controllers
             _villaService = villaService;
         }
 
-        
+
         public async Task<IActionResult> IndexVillaNumber()
         {
             List<VillaNumberDTO> villaNumberDTO = null;
@@ -52,6 +51,10 @@ namespace MagicVilla_Web.Controllers
                     Value = i.Id.ToString(),
                 });
             }
+            else
+            {
+                TempData["error"] = (response.ErrorMessages != null && response.ErrorMessages.Count > 0) ? response.ErrorMessages[0] : "Error Encountered";
+            }
             return View(villaNumberCreateVM);
         }
 
@@ -62,30 +65,30 @@ namespace MagicVilla_Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var response = await _villaNumberService.CreateAsync<ApiResponse>(villaNumberCreateVM.VillaNumberCreateDTO);
-                if (response != null && response.IsSuccess)
+                var response_ = await _villaNumberService.CreateAsync<ApiResponse>(villaNumberCreateVM.VillaNumberCreateDTO);
+                if (response_ != null && response_.IsSuccess)
                 {
                     TempData["success"] = "VillaNumber created successfully !";
                     return RedirectToAction(nameof(IndexVillaNumber));
                 }
-                else if (response.ErrorMessages.Count > 0)
+                else
                 {
-                    ModelState.AddModelError("ErrorMessages", response.ErrorMessages.FirstOrDefault());
+                    TempData["error"] = (response_.ErrorMessages != null && response_.ErrorMessages.Count > 0) ? response_.ErrorMessages[0] : "Error Encountered";
                 }
             }
 
             // if we get error message in post method we need return model back to view again but also we should initialize IEnumerable<SlectListItem> VillaList with villas again, here we do it     
-            var villas = await _villaService.GetAllAsync<ApiResponse>();
-            if (villas.Result != null && villas.IsSuccess)
+            var response  = await _villaService.GetAllAsync<ApiResponse>();
+            if (response.Result != null && response.IsSuccess)
             {
                 // this populates our dropdown's data
-                villaNumberCreateVM.VillaList = JsonConvert.DeserializeObject<List<VillaDTO>>(Convert.ToString(villas.Result)).Select(i => new SelectListItem
+                villaNumberCreateVM.VillaList = JsonConvert.DeserializeObject<List<VillaDTO>>(Convert.ToString(response.Result)).Select(i => new SelectListItem
                 {
                     Text = i.Name,
                     Value = i.Id.ToString(),
                 });
             }
-            TempData["error"] = "Error encountered";
+            
             return View(villaNumberCreateVM);
         }
 
@@ -99,6 +102,10 @@ namespace MagicVilla_Web.Controllers
                 VillaNumberDTO villaNumberUpdateDTO = JsonConvert.DeserializeObject<VillaNumberDTO>(Convert.ToString(response.Result));
                 villaNumberUpdateVM.VillaNumberUpdateDTO = _mapper.Map<VillaNumberUpdateDTO>(villaNumberUpdateDTO);
             }
+            else
+            {
+                TempData["error"] = (response.ErrorMessages != null && response.ErrorMessages.Count > 0) ? response.ErrorMessages[0] : "Error Encountered";
+            }
 
             var villas = await _villaService.GetAllAsync<ApiResponse>();
             if (villas.Result != null && villas.IsSuccess)
@@ -111,6 +118,7 @@ namespace MagicVilla_Web.Controllers
                 });
                 return View(villaNumberUpdateVM);
             }
+            
             return NotFound();
         }
 
@@ -126,9 +134,9 @@ namespace MagicVilla_Web.Controllers
                 TempData["success"] = "VillaNumber updated successfully !";
                 return RedirectToAction(nameof(IndexVillaNumber));
             }
-            else if (response.ErrorMessages.Count > 0)
+            else
             {
-                ModelState.AddModelError("ErrorMessages", response.ErrorMessages.FirstOrDefault());
+                TempData["error"] = (response.ErrorMessages != null && response.ErrorMessages.Count > 0) ? response.ErrorMessages[0] : "Error Encountered";
             }
 
             var villas = await _villaService.GetAllAsync<ApiResponse>();
@@ -140,8 +148,7 @@ namespace MagicVilla_Web.Controllers
                     Text = i.Name,
                     Value = i.Id.ToString(),
                 });
-            }
-            TempData["error"] = "Error encountered";
+            }            
             return View(villaNumberUpdateVM);
         }
 
@@ -154,6 +161,10 @@ namespace MagicVilla_Web.Controllers
             {
                 VillaNumberDTO villaNumberDTO = JsonConvert.DeserializeObject<VillaNumberDTO>(Convert.ToString(response.Result));
                 villaNumberDeleteVM.VillaNumberDTO = villaNumberDTO;
+            }
+            else
+            {
+                TempData["error"] = (response.ErrorMessages != null && response.ErrorMessages.Count > 0) ? response.ErrorMessages[0] : "Error Encountered";
             }
 
             var villas = await _villaService.GetAllAsync<ApiResponse>();
@@ -174,18 +185,16 @@ namespace MagicVilla_Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteVillaNumber(VillaNumberDeleteVM villaNumberDeleteVM)
-        {            
+        {
             var response = await _villaNumberService.DeleteAsync<ApiResponse>(villaNumberDeleteVM.VillaNumberDTO.VillaNo);
             if (response != null && response.IsSuccess)
             {
                 TempData["success"] = "VillaNumber deleted successfully !";
                 return RedirectToAction(nameof(IndexVillaNumber));
             }
-            else if (response.ErrorMessages.Count > 0)
-            {
-                ModelState.AddModelError("ErrorMessages", response.ErrorMessages.FirstOrDefault());
-            }
-            TempData["error"] = "Error encountered";
+
+            TempData["error"] = (response.ErrorMessages != null && response.ErrorMessages.Count > 0) ? response.ErrorMessages[0] : "Error Encountered";
+
             return View(villaNumberDeleteVM);
         }
     }

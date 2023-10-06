@@ -26,6 +26,16 @@ namespace MagicVilla_Web.Services
             }, withBearer:false);
         }
 
+        public async Task<T> LogOutAsync<T>(TokenDTO tokenDTO)
+        {
+            return await _baseService.SendAsync<T>(new ApiRequest()
+            {
+                ApiType = MagicVilla_Utility.StaticDetails.ApiType.POST,                
+                Data = tokenDTO,   
+                ApiUrl = _url + "api/UsersAuth/revoke"
+            });
+        }
+
         public async Task<T> RegisterAsync<T>(RegistrationRequestDTO userToCreate)
         {
             return await _baseService.SendAsync<T>(new ApiRequest()
