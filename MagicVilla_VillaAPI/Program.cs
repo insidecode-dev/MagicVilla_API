@@ -10,6 +10,8 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Identity;
 using MagicVilla_VillaAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -93,72 +95,8 @@ builder.Services.AddControllers(options =>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Scheme = "Bearer",
-        //BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Name = "Authorization",
-        Description = "Bearer Authentication with JWT Token",
-        //Type = SecuritySchemeType.Http
-    });
-
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement()
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference{Type = ReferenceType.SecurityScheme, Id="Bearer"},
-                Scheme = "oauth2",
-                Name = "Bearer",
-                In = ParameterLocation.Header
-            },
-            new List<string>()
-        }
-    });
-
-    // creating a swagger document for our specified version 
-    // I created swagger documentation for v1
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Version = "v1.0",
-        Title = "Magic Villa V1",
-        Description = "API to manage Villa",
-        TermsOfService = new Uri("https://www.postman.com/"),
-        Contact = new OpenApiContact
-        {
-            Name = "insidecode",
-            Url = new Uri("https://github.com/insidecode-dev")
-        },
-        License = new OpenApiLicense
-        {
-            Name = "Example License",
-            Url= new Uri("https://www.google.com/search?q=license&oq=license&aqs=chrome..69i57.3695j0j7&sourceid=chrome&ie=UTF-8")
-        }
-    });
-
-    // I created swagger documentation for v2
-    options.SwaggerDoc("v2", new OpenApiInfo
-    {
-        
-        Version = "v2.0",
-        Title = "Magic Villa V2",
-        Description = "API to manage Villa",
-        TermsOfService = new Uri("https://www.postman.com/"),
-        Contact = new OpenApiContact
-        {
-            Name = "insidecode",
-            Url = new Uri("https://github.com/insidecode-dev")
-        },
-        License = new OpenApiLicense
-        {
-            Name = "Example License",
-            Url = new Uri("https://www.google.com/search?q=license&oq=license&aqs=chrome..69i57.3695j0j7&sourceid=chrome&ie=UTF-8")
-        }
-    });
-});
+builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+builder.Services.AddSwaggerGen();
 
 
 
@@ -195,5 +133,18 @@ app.UseAuthorization();
 app.UseStatusCodePages();
 
 app.MapControllers();
-
+ApplyMigration();
 app.Run();
+
+void ApplyMigration()
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var _db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        if (_db.Database.GetPendingMigrations().Count() > 0)
+        {
+            _db.Database.Migrate();
+        }
+    }
+}
