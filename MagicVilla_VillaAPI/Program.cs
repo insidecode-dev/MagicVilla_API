@@ -12,6 +12,7 @@ using MagicVilla_VillaAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using MagicVilla_VillaAPI.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -86,10 +87,13 @@ builder.Services.AddControllers(options =>
 {
     //options.ReturnHttpNotAcceptable = true;  //returns error message if return type format of response is not acceptable, it means if we do not add this manually and set true it will be false by default and as a result it will return data as json format by default even if the return format is switched to text/plain in swagger documentation no error will be throwed
 
-    options.CacheProfiles.Add("Default30", new Microsoft.AspNetCore.Mvc.CacheProfile
-    {
-        Duration = 30
-    });
+    //options.CacheProfiles.Add("Default30", new Microsoft.AspNetCore.Mvc.CacheProfile
+    //{
+    //    Duration = 30
+    //});
+
+    // custom exception filter
+    options.Filters.Add<CustomExceptionFilter>();
 }).AddNewtonsoftJson();  // we added AddNewtonsoftJson() extension method manually for HttpPatch reuqest
                            //.AddXmlDataContractSerializerFormatters();  //if we want to get response in xml format we add this service
 

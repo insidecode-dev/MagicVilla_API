@@ -143,7 +143,7 @@ namespace MagicVilla_VillaAPI.Controllers.v2
             try
             {
                 var vll = await _villaRepository.GetAsync(x => x.Name.ToLower() == createDTO.Name.ToLower(), false);
-                if (vll != null)
+                if (vll != null) 
                 {
                     ModelState.AddModelError("ErrorMessages", "Name already exists");
                     return BadRequest(ModelState);
