@@ -93,9 +93,7 @@ namespace MagicVilla_VillaAPI.Repository
                         new Claim(JwtRegisteredClaimNames.Jti, jwtTokenId), // jti represents unique id for jwt token
                         new Claim(JwtRegisteredClaimNames.Sub, applicationUser.Id)
                     }),
-                Expires = DateTime.UtcNow.AddMinutes(1),
-                Issuer = "https://magicvilla.com",
-                Audience = "https://test-magicvilla.com",
+                Expires = DateTime.UtcNow.AddMinutes(1),                
                 // finally we create symmetric security key with our key variable 
                 SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };

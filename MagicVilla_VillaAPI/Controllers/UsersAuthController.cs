@@ -20,6 +20,12 @@ namespace MagicVilla_VillaAPI.Controllers
             _apiResponse = new();
         }
 
+        [HttpGet("Error")]
+        public async Task<IActionResult> Error()
+        {
+            throw new FileNotFoundException();
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LogInRequestDto logInRequestDto)
         {

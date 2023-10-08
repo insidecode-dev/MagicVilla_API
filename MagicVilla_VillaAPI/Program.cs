@@ -120,6 +120,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// exception handling
+app.UseExceptionHandler("/ErrorHandling/ProcessError");
+
+
 // for wwwroot folder   
 app.UseStaticFiles();
 
